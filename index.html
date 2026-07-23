@@ -717,12 +717,33 @@ async function addMark(typeIdx) {
   render();
 }
 
-async function addDirMark(idx, emoji, label) {
+async function addDirMark(idx) {
+  const pid = 'P' + String(idx + 1).padStart(3, '0');
+  const mark = { by: 'Committee', time: now() };
+  await dbArrayAdd(pid, 'marks', mark);
+  updateDirScore(idx);
+  toast(`✅ Mark added to ${PARTICIPANTS[idx].name}!`);
+}
+
+async function deductDirMark(idx) {
   const pid = 'P' + String(idx + 1).padStart(3, '0');
   const data = await dbLoad(pid);
-  const mark = { emoji, label, by: 'Committee', time: now() };
-  await dbArrayAdd(pid, 'marks', mark);
-  toast(`${emoji} Mark added to ${PARTICIPANTS[idx].name}!`);
+  if (Array.isArray(data.marks) && data.marks.length > 0) {
+    data.marks.pop();
+    await dbSave(pid, { marks: data.marks });
+    updateDirScore(idx);
+    toast(`❌ Mark deducted from ${PARTICIPANTS[idx].name}!`);
+  } else {
+    toast('⚠️ No marks to deduct');
+  }
+}
+
+async function updateDirScore(idx) {
+  const pid = 'P' + String(idx + 1).padStart(3, '0');
+  const data = await dbLoad(pid);
+  const score = Array.isArray(data.marks) ? data.marks.length : 0;
+  const el = document.getElementById('score-' + pid);
+  if (el) el.textContent = score;
 }
 
 async function addGrowth() {
@@ -853,7 +874,7 @@ function renderDirList() {
     const pid = 'P' + String(i + 1).padStart(3, '0');
     const initials = p.name.replace(/^DR\.?\s*/i, '').trim().slice(0, 2).toUpperCase();
     return `
-      <div class="dir-item" style="display:flex;gap:10px;">
+      <div class="dir-item" style="display:flex;gap:12px;align-items:center;">
         <div style="flex:1;cursor:pointer;" onclick="loadProfile(${i})">
           <div style="display:flex;align-items:center;gap:12px;">
             <div class="dir-avatar">${initials}</div>
@@ -864,9 +885,9 @@ function renderDirList() {
           </div>
         </div>
         <span class="dir-outlet-tag">${p.outlet}</span>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:160px;justify-content:flex-end;">
-          ${MARK_TYPES.map((m, mi) => `<button onclick="event.stopPropagation();addDirMark(${i},'${m.emoji}','${m.label}')" title="${m.label}" style="background:rgba(212,167,44,0.08);border:1px solid rgba(212,167,44,0.2);color:var(--text);padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s;" onmouseover="this.style.background='var(--gold3)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(212,167,44,0.08)';this.style.borderColor='rgba(212,167,44,0.2)'">${m.emoji}</button>`).join('')}
-        </div>
+        <button onclick="event.stopPropagation();addDirMark(${i})" style="background:var(--green);border:none;color:#000;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">+ Add</button>
+        <button onclick="event.stopPropagation();deductDirMark(${i})" style="background:var(--red);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">- Deduct</button>
+        <div id="score-${pid}" style="min-width:40px;text-align:center;font-weight:600;color:var(--gold)">0</div>
       </div>`;
   }).join('');
 }
