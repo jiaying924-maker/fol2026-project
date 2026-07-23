@@ -665,15 +665,18 @@ async function addDirMarks(idx, count) {
 async function deductDirMarks(idx, count) {
   const pid = 'P' + String(idx + 1).padStart(3, '0');
   const data = await dbLoad(pid);
-  if (Array.isArray(data.marks) && data.marks.length > 0) {
-    const removeCount = Math.min(count, data.marks.length);
-    data.marks = data.marks.slice(0, -removeCount);
-    await dbSave(pid, { marks: data.marks });
-    updateDirScore(idx);
-    toast(`❌ -${removeCount} marks deducted from ${PARTICIPANTS[idx].name}!`);
-  } else {
-    toast('⚠️ No marks to deduct');
+  data.marks = Array.isArray(data.marks) ? data.marks : [];
+  // Remove actual marks first
+  const removeCount = Math.min(count, data.marks.length);
+  data.marks = data.marks.slice(0, -removeCount);
+  // If more to deduct, add negative mark entries
+  const remaining = count - removeCount;
+  for (let i = 0; i < remaining; i++) {
+    data.marks.push({ by: 'Committee', negative: true, time: now() });
   }
+  await dbSave(pid, { marks: data.marks });
+  updateDirScore(idx);
+  toast(`❌ -${count} marks deducted from ${PARTICIPANTS[idx].name}!`);
 }
 
 async function updateDirScore(idx) {
