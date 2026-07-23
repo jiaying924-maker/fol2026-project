@@ -763,7 +763,8 @@ function verifyPin() {
     document.getElementById('pinBg').classList.remove('on');
     document.getElementById('pinInput').value = '';
     document.getElementById('pinErr').textContent = '';
-    render();
+    if (P) render();
+    else renderDirectory();
     toast('🔓 Committee mode activated');
   } else {
     document.getElementById('pinErr').textContent = 'Incorrect PIN. Please try again.';
