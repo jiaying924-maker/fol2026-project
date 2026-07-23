@@ -683,16 +683,53 @@ async function updateDirScore(idx) {
   if (el) el.textContent = score;
 }
 
-function sortDirByScore() {
-  const list = getCurrentDirList();
-  list.sort(async (a, b) => {
-    const pidA = 'P' + String(a.i + 1).padStart(3, '0');
-    const pidB = 'P' + String(b.i + 1).padStart(3, '0');
-    const scoreA = Array.isArray((await dbLoad(pidA)).marks) ? (await dbLoad(pidA)).marks.length : 0;
-    const scoreB = Array.isArray((await dbLoad(pidB)).marks) ? (await dbLoad(pidB)).marks.length : 0;
-    return scoreB - scoreA;
+async function sortDirByScore() {
+  const q = (document.getElementById('dirSearch')?.value || '').toLowerCase().trim();
+  let list = PARTICIPANTS.map((p, i) => ({ p, i })).filter(({ p }) => {
+    if (dirOutlet && p.outlet !== dirOutlet) return false;
+    if (q && !p.name.toLowerCase().includes(q) && !p.full.toLowerCase().includes(q)) return false;
+    return true;
   });
-  renderDirListCustom(list);
+
+  // Load scores for each participant
+  const scores = {};
+  for (const { p, i } of list) {
+    const pid = 'P' + String(i + 1).padStart(3, '0');
+    const data = await dbLoad(pid);
+    scores[pid] = Array.isArray(data.marks) ? data.marks.length : 0;
+  }
+
+  // Sort by score descending
+  list.sort(({ i: ia }, { i: ib }) => {
+    const pidA = 'P' + String(ia + 1).padStart(3, '0');
+    const pidB = 'P' + String(ib + 1).padStart(3, '0');
+    return (scores[pidB] || 0) - (scores[pidA] || 0);
+  });
+
+  // Re-render with sorted list
+  const el = document.getElementById('dirList');
+  if (!el) return;
+  el.innerHTML = list.map(({ p, i }) => {
+    const pid = 'P' + String(i + 1).padStart(3, '0');
+    const initials = p.name.replace(/^DR\.?\s*/i, '').trim().slice(0, 2).toUpperCase();
+    return `
+      <div class="dir-item" style="display:flex;gap:12px;align-items:center;">
+        <div style="flex:1;cursor:pointer;" onclick="loadProfile(${i})">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="dir-avatar">${initials}</div>
+            <div class="dir-info">
+              <div class="dir-name">${p.name}</div>
+              <div class="dir-meta">${p.full} · ${p.role}${p.notAttending ? ' · <span style="color:#f08080">Not attending</span>' : ''}</div>
+            </div>
+          </div>
+        </div>
+        <span class="dir-outlet-tag">${p.outlet}</span>
+        <button onclick="event.stopPropagation();addDirMarks(${i},3)" style="background:var(--green);border:none;color:#000;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">+3</button>
+        <button onclick="event.stopPropagation();deductDirMarks(${i},2)" style="background:var(--red);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">-2</button>
+        <div id="score-${pid}" style="min-width:50px;text-align:center;font-weight:600;color:var(--gold);font-size:18px;">${scores[pid] || 0}</div>
+      </div>`;
+  }).join('');
+  toast('📊 Sorted by score (highest first)');
 }
 
 async function addGrowth() {
