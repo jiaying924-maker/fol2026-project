@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FOL 2026 · Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0C0C0C; --card: #181818; --card2: #222;
+  --gold: #D4A72C; --gold2: #F0D980; --gold3: rgba(212,167,44,0.12);
+  --text: #E5E5E5; --muted: #777; --border: rgba(212,167,44,0.18);
+  --green: #4CAF50; --red: #CC3333; --blue: #4A9EDA;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter','Noto Sans SC',system-ui,sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* ── Hero ── */
+.hero { background: #000; padding: 28px 20px 36px; text-align: center; position: relative; overflow: hidden; }
+.hero::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(212,167,44,0.08) 0%, transparent 65%); pointer-events: none; }
+.fol-logo { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 700; letter-spacing: 14px; color: #fff; line-height: 1; }
+.fol-year { font-size: 11px; letter-spacing: 8px; color: var(--gold); margin-top: 6px; text-transform: uppercase; }
+.hero-divider { display: flex; align-items: center; gap: 10px; max-width: 160px; margin: 14px auto; }
+.hero-divider::before, .hero-divider::after { content: ''; flex: 1; height: 1px; background: var(--gold); opacity: 0.35; }
+.hero-star { color: var(--gold); font-size: 9px; }
+
+/* ── Participant info ── */
+.p-section { text-align: center; padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.role-pill { display: inline-block; background: #000; border: 1px solid var(--gold); color: var(--gold); font-size: 10px; font-weight: 600; letter-spacing: 2.5px; padding: 5px 14px; border-radius: 2px; text-transform: uppercase; margin-bottom: 14px; }
+.p-name { font-family: 'Cormorant Garamond', serif; font-size: 44px; font-weight: 700; color: #fff; line-height: 1.05; letter-spacing: 0.5px; }
+.p-full { font-size: 12px; color: var(--muted); margin-top: 5px; letter-spacing: 1px; text-transform: uppercase; }
+.tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+.tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 4px 12px; border-radius: 99px; }
+.tag-outlet { background: rgba(74,158,218,0.1); border: 1px solid rgba(74,158,218,0.3); color: #7bb8e0; }
+.tag-present { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.35); color: #81C784; }
+.tag-absent { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--muted); }
+
+/* ── Sections ── */
+.sections { padding: 14px 16px 40px; display: flex; flex-direction: column; gap: 12px; max-width: 480px; margin: 0 auto; }
+.card { background: var(--card); border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.055); }
+.card-head { display: flex; align-items: center; gap: 10px; padding: 15px 18px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.card-icon { font-size: 20px; line-height: 1; }
+.card-title { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+.card-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.card-body { padding: 16px 18px; }
+.empty-note { text-align: center; color: var(--muted); font-size: 13px; font-style: italic; padding: 8px 0; }
+
+/* ── Angel's Whisper ── */
+.whisper-sealed { display: flex; flex-direction: column; align-items: center; padding: 22px 0 18px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
+.envelope { font-size: 56px; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 6px 16px rgba(212,167,44,0.35)); margin-bottom: 12px; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+.whisper-hint { font-size: 11px; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.whisper-open { display: none; text-align: center; padding: 6px 0; }
+.whisper-open.revealed { display: block; animation: fadeIn 0.6s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.whisper-label { font-size: 10px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 14px; }
+.whisper-text { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-style: italic; line-height: 1.65; color: #fff; padding: 0 4px; }
+.whisper-from { font-size: 11px; color: var(--muted); margin-top: 14px; }
+.whisper-admin-edit { margin-top: 12px; }
+
+/* ── Attendance ── */
+.attend-body { text-align: center; padding: 8px 0; }
+.attend-status-txt { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+.attend-status-txt.ok { color: #81C784; }
+.attend-status-txt.no { color: var(--muted); }
+.attend-time-txt { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+/* ── Marks ── */
+.marks-count { text-align: center; margin-bottom: 12px; }
+.marks-num { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 700; color: var(--gold); line-height: 1; }
+.marks-num-label { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+.marks-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.mark-chip { display: flex; align-items: center; gap: 7px; background: var(--gold3); border: 1px solid rgba(212,167,44,0.22); border-radius: 99px; padding: 7px 13px; }
+.mark-chip .me { font-size: 17px; }
+.mark-chip .ml { font-size: 12px; color: var(--gold2); font-weight: 500; }
+.mark-chip .mb { font-size: 10px; color: var(--muted); }
+
+/* ── Growth Timeline ── */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.tl-item { display: flex; gap: 12px; padding-bottom: 18px; position: relative; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item:not(:last-child)::before { content:''; position:absolute; left:15px; top:30px; bottom:0; width:2px; background:rgba(212,167,44,0.12); }
+.tl-dot { width:32px; height:32px; border-radius:50%; background:var(--gold3); border:2px solid rgba(212,167,44,0.3); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.tl-content {}
+.tl-note { font-size:14px; line-height:1.55; color:var(--text); }
+.tl-meta { font-size:10px; color:var(--muted); margin-top:4px; }
+
+/* ── Messages ── */
+.msg-form { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
+.inp { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 14px; color:var(--text); font-size:13px; font-family:inherit; outline:none; width:100%; transition:border-color .2s; }
+.inp:focus { border-color:var(--gold); }
+.inp::placeholder { color:var(--muted); }
+textarea.inp { resize:vertical; min-height:70px; }
+.msgs-list { display:flex; flex-direction:column; gap:9px; }
+.msg-item { background:rgba(255,255,255,0.038); border-radius:12px; padding:12px 14px; border-left:2px solid rgba(212,167,44,0.28); }
+.msg-from { font-size:12px; font-weight:600; color:var(--gold2); margin-bottom:4px; }
+.msg-text { font-size:13px; line-height:1.5; }
+.msg-time { font-size:10px; color:var(--muted); margin-top:4px; }
+
+/* ── Buttons ── */
+.btn { display:flex; align-items:center; justify-content:center; gap:7px; border:none; border-radius:11px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .18s; letter-spacing:0.3px; width:100%; }
+.btn-gold { background:var(--gold); color:#000; }
+.btn-gold:hover { background:var(--gold2); }
+.btn-outline { background:transparent; border:1px solid rgba(255,255,255,0.18); color:var(--text); }
+.btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+.btn-green { background:rgba(76,175,80,0.12); border:1px solid rgba(76,175,80,0.35); color:#81C784; }
+.btn-red { background:rgba(204,51,51,0.1); border:1px solid rgba(204,51,51,0.3); color:#f08080; }
+.btn:disabled { opacity:.45; cursor:default; pointer-events:none; }
+.btn-sm { padding:8px 14px; font-size:12px; border-radius:8px; width:auto; }
+
+/* ── Admin Panel ── */
+.admin-card { background:rgba(212,167,44,0.03); border:1px solid rgba(212,167,44,0.2); border-radius:18px; padding:18px; display:none; }
+.admin-card.on { display:block; animation:fadeIn .3s ease; }
+.admin-hdr { font-size:10px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; gap:6px; font-weight:600; }
+.admin-block { margin-bottom:18px; }
+.admin-label { font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; font-weight:500; }
+.mark-btns { display:flex; flex-wrap:wrap; gap:7px; }
+.mark-btn { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:99px; padding:7px 13px; font-size:13px; cursor:pointer; color:var(--text); font-family:inherit; transition:all .18s; }
+.mark-btn:hover { background:var(--gold3); border-color:var(--gold); }
+
+/* ── PIN Overlay ── */
+.pin-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82); backdrop-filter:blur(8px); z-index:999; align-items:center; justify-content:center; padding:20px; }
+.pin-bg.on { display:flex; }
+.pin-box { background:var(--card); border-radius:22px; padding:30px 24px; max-width:320px; width:100%; border:1px solid rgba(212,167,44,0.2); text-align:center; }
+.pin-ttl { font-size:20px; font-weight:700; margin-bottom:6px; }
+.pin-sub { font-size:13px; color:var(--muted); margin-bottom:22px; }
+.pin-inp { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:13px; font-size:18px; letter-spacing:5px; text-align:center; color:var(--text); font-family:inherit; outline:none; margin-bottom:10px; }
+.pin-inp:focus { border-color:var(--gold); }
+.pin-err { font-size:12px; color:var(--red); min-height:18px; margin-bottom:10px; }
+
+/* ── Toast ── */
+.toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:#2a2a2a; border:1px solid rgba(212,167,44,0.25); color:var(--text); padding:11px 22px; border-radius:99px; font-size:13px; font-weight:500; z-index:9999; transition:transform .3s ease; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── Committee link ── */
+.committee-link { text-align:center; padding:28px 0 12px; }
+.committee-link button { background:none; border:none; color:rgba(255,255,255,0.18); font-size:11px; cursor:pointer; font-family:inherit; padding:8px; letter-spacing:1px; }
+.committee-link button:hover { color:var(--gold); }
+
+/* ── Directory ── */
+.dir-wrap { max-width: 480px; margin: 0 auto; padding: 0 16px 40px; }
+.dir-search-box { position: relative; margin: 16px 0 10px; }
+.dir-search-box input { width:100%; background:var(--card); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 14px 12px 40px; font-size:14px; color:var(--text); font-family:inherit; outline:none; transition:border-color .2s; }
+.dir-search-box input:focus { border-color:var(--gold); }
+.dir-search-box input::placeholder { color:var(--muted); }
+.dir-search-icon { position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:16px; }
+.dir-scan-btn { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:var(--gold); color:#000; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-bottom:14px; transition:background .18s; }
+.dir-scan-btn:hover { background:var(--gold2); }
+.dir-scanner-box { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:14px; display:none; }
+.dir-scanner-box.on { display:block; }
+.dir-scanner-inner { width:100%; aspect-ratio:1; position:relative; }
+#dir-qr-reader { width:100%!important; }
+#dir-qr-reader video { width:100%!important; height:auto!important; border-radius:0; }
+.dir-scanner-close { width:100%; background:rgba(255,255,255,0.05); border:none; border-top:1px solid var(--border); color:var(--muted); padding:10px; font-size:12px; cursor:pointer; font-family:inherit; }
+.dir-scanner-close:hover { color:var(--text); }
+.dir-outlet-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.dir-outlet-btn { background:var(--card); border:1px solid var(--border); color:var(--muted); font-size:10px; font-weight:600; padding:5px 10px; border-radius:6px; cursor:pointer; letter-spacing:0.5px; transition:all .15s; }
+.dir-outlet-btn:hover,.dir-outlet-btn.active { background:var(--gold3); border-color:rgba(212,167,44,0.4); color:var(--gold); }
+.dir-count { font-size:11px; color:var(--muted); margin-bottom:10px; letter-spacing:0.5px; }
+.dir-list { display:flex; flex-direction:column; gap:6px; }
+.dir-item { display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 14px; cursor:pointer; transition:all .18s; text-decoration:none; color:inherit; }
+.dir-item:hover { background:var(--card2); border-color:rgba(212,167,44,0.2); transform:translateX(3px); }
+.dir-avatar { width:38px; height:38px; border-radius:50%; background:var(--gold3); border:1px solid rgba(212,167,44,0.25); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--gold); flex-shrink:0; font-family:'Cormorant Garamond',serif; }
+.dir-info { flex:1; min-width:0; }
+.dir-name { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dir-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+.dir-outlet-tag { background:rgba(74,158,218,0.1); border:1px solid rgba(74,158,218,0.25); color:#7bb8e0; font-size:10px; padding:3px 9px; border-radius:99px; flex-shrink:0; font-weight:500; }
+.dir-arrow { color:var(--muted); font-size:14px; flex-shrink:0; }
+
+.page-foot { text-align:center; padding:0 0 24px; font-size:10px; color:rgba(255,255,255,0.12); letter-spacing:1.5px; }
+
+@media (max-width:400px) {
+  .fol-logo { font-size:52px; }
+  .p-name { font-size:36px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<!-- QR Scanner -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<div id="app">
+  <div style="text-align:center;padding:80px 20px;color:#555;font-size:15px">Loading...</div>
+</div>
+
+<!-- PIN overlay -->
+<div class="pin-bg" id="pinBg">
+  <div class="pin-box">
+    <div class="pin-ttl">🔐 Committee</div>
+    <div class="pin-sub">Enter the committee PIN to unlock admin features</div>
+    <input class="pin-inp" id="pinInput" type="password" maxlength="12" placeholder="••••••">
+    <div class="pin-err" id="pinErr"></div>
+    <button class="btn btn-gold" onclick="verifyPin()" style="margin-bottom:8px">Unlock</button>
+    <button class="btn btn-outline" onclick="document.getElementById('pinBg').classList.remove('on')">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// ▶ CONFIGURATION — fill in your Firebase details after creating project
+//   Steps: console.firebase.google.com → New project "fol2026" →
+//   Firestore → Start in test mode → Project Settings → Web App → Copy
+//   Leave PASTE values to run in offline/localStorage mode for testing.
+// =====================================================================
+const FB_CONFIG = {
+  apiKey:            "PASTE_API_KEY",
+  authDomain:        "PASTE_PROJECT.firebaseapp.com",
+  projectId:         "PASTE_PROJECT_ID",
+  storageBucket:     "PASTE_PROJECT.appspot.com",
+  messagingSenderId: "PASTE_SENDER_ID",
+  appId:             "PASTE_APP_ID"
+};
+const COMMITTEE_PIN = "FOL2026";   // change if needed
+
+// =====================================================================
+// PARTICIPANTS
+// =====================================================================
+const PARTICIPANTS = [
+  { name:'DR. FONG',     full:'FONG TOH JENG',                role:'CEO',        outlet:'HQ' },
+  { name:'DR. JAYE',     full:'TAN SOO HUA',                  role:'COO',        outlet:'HQ' },
+  { name:'DR. JOVYN',    full:'NG CHIA WEN',                  role:'CTO',        outlet:'HQ' },
+  { name:'DR NICOLE',    full:'NICOLE NG I',                  role:'VTO',        outlet:'HQ' },
+  { name:'DR XUAN',      full:'LIM WEN XUAN',                 role:'LOO',        outlet:'HQ' },
+  { name:'DR JEM',       full:'LIM JIA YING',                 role:'LPO',        outlet:'HQ' },
+  { name:'YU CHUEN',     full:'YU CHUEN',                     role:'CP',         outlet:'HQ' },
+  { name:'JIA XUAN',     full:'LIM JIA XUAN',                 role:'CP',         outlet:'HQ' },
+  { name:'CHING THING',  full:'KOAY CHING THING',             role:'HR',         outlet:'HQ' },
+  { name:'KHAI XUAN',    full:'TAN KHAI XUAN',                role:'HR',         outlet:'HQ' },
+  { name:'CELINE',       full:'CELINE TEH SHYEH YIN',         role:'HR',         outlet:'HQ' },
+  { name:'CAROL',        full:'TAN EE ING',                   role:'PPC',        outlet:'HQ' },
+  { name:'LIANG',        full:'HONG CHOO LIANG',              role:'PPC',        outlet:'HQ' },
+  { name:'XIN RU',       full:'YEOH XIN RU',                  role:'PPC',        outlet:'HQ' },
+  { name:'CATHERINE',    full:'LAO HONG HONG',                role:'QA',         outlet:'HQ' },
+  { name:'JINNY',        full:'LIM JING YEE',                 role:'QA',         outlet:'HQ' },
+  { name:'SHUE HUI',     full:'KOAY SHUE HUI',                role:'QA',         outlet:'HQ' },
+  { name:'TK',           full:'NG TIEN KHOON',                role:'SDA',        outlet:'HQ' },
+  { name:'ADELINE',      full:'LEE KHE HUONG',                role:'RC',         outlet:'HQ' },
+  { name:'叶老师',        full:'YEAP WENG HOE',                role:'ADVISOR',    outlet:'HQ' },
+  { name:'NICOLE',       full:'YEE WEI TING',                 role:'AM',         outlet:'PG' },
+  { name:'PHEI CHIA',    full:'CHEE TOO PHEI CHIA',           role:'AAM',        outlet:'PG' },
+  { name:'WENNIE',       full:'NEOW WENNIE',                  role:'Consultant', outlet:'BM' },
+  { name:'ESTHER',       full:'LOW KER YEE',                  role:'Consultant', outlet:'BM' },
+  { name:'HONEY',        full:'HONEY CHONG THEAN MI',         role:'Consultant', outlet:'BM' },
+  { name:'SHERLYN',      full:'TAN YING SING',                role:'Consultant', outlet:'BM' },
+  { name:'WAN YING',     full:'NGO WAN YING',                 role:'Consultant', outlet:'BM' },
+  { name:'ENNA',         full:'LAW YI ERN',                   role:'Consultant', outlet:'BM' },
+  { name:'TIFFANY',      full:'NG SHI HUI',                   role:'Therapist',  outlet:'BM' },
+  { name:'VENUS',        full:'TEE YEE SYUEN',                role:'Therapist',  outlet:'BM' },
+  { name:'YEN SI',       full:'TAN YEN SI',                   role:'Therapist',  outlet:'BM' },
+  { name:'AI MEI',       full:'CHAN AI MEI',                   role:'Therapist',  outlet:'BM' },
+  { name:'YE YING',      full:'TAN YE YING',                  role:'Therapist',  outlet:'BM' },
+  { name:'YVONNE',       full:'ANG YVONNE',                   role:'Therapist',  outlet:'BM' },
+  { name:'ELAINE',       full:'TAN JIA SHYUAN',               role:'CSR',        outlet:'BM' },
+  { name:'JANICE',       full:'KHOR YI TING',                 role:'CSR',        outlet:'BM' },
+  { name:'DR HONG',      full:'HONG JIA JUN',                 role:'Doctor',     outlet:'BM' },
+  { name:'DR LEENA',     full:'LIM LEE NAA',                  role:'Doctor',     outlet:'BM' },
+  { name:'DR JOLING',    full:'CHEW PHOAY KOON',              role:'Doctor',     outlet:'BM' },
+  { name:'DR EE LING',   full:'TAN EE LING',                  role:'Doctor',     outlet:'BM' },
+  { name:'DR.JOYCE',     full:'JOYCE ONG ZIZHI',              role:'DTTP',       outlet:'GL' },
+  { name:'MINDY',        full:'CHEW SEE MENG',                role:'Consultant', outlet:'GL' },
+  { name:'SYVIN',        full:'FOO LI SHAN',                  role:'Consultant', outlet:'GL' },
+  { name:'HUI XIAN',     full:'KHOO HUI XIAN',                role:'Consultant', outlet:'GL' },
+  { name:'JANICE',       full:'KHOO WEI SIN',                 role:'Consultant', outlet:'GL' },
+  { name:'STELLA',       full:'TAN CHI YAN',                  role:'Consultant', outlet:'GL' },
+  { name:'KATHERINE',    full:'CHAI XIN JIE',                 role:'Consultant', outlet:'GL' },
+  { name:'YUNNY',        full:'ANG YUN QI',                   role:'Therapist',  outlet:'GL' },
+  { name:'KARENE',       full:'HON YI TING',                  role:'Therapist',  outlet:'GL' },
+  { name:'REGINA',       full:"REGINA CH'NG PEI XUAN",        role:'Therapist',  outlet:'GL' },
+  { name:'XIAO WEI',     full:"CH'NG XIAO WEI",               role:'Therapist',  outlet:'GL' },
+  { name:'YEN HOON',     full:'OON YEN HOON',                 role:'Therapist',  outlet:'GL' },
+  { name:'CHLOE',        full:'LEE WAN YU',                   role:'Therapist',  outlet:'GL' },
+  { name:'IRIS',         full:'OOI TZE YEE',                  role:'Therapist',  outlet:'GL' },
+  { name:'TIFFANY',      full:'CHENG ZHI EN',                 role:'Therapist',  outlet:'GL' },
+  { name:'ESTHER',       full:'ESTHER TAN JIA YING',          role:'CSR',        outlet:'GL' },
+  { name:'DR CHERYL',    full:'CHERYL LOW YEE WEN',           role:'Doctor',     outlet:'GL' },
+  { name:'DR MICHELLE',  full:'MICHELLE KOK WAN YING',        role:'Doctor',     outlet:'GL' },
+  { name:'DR CHAN',      full:'CHAN SZE YUET',                 role:'Doctor',     outlet:'GL' },
+  { name:'DR YI WEN',    full:'TAN YI WEN',                   role:'Doctor',     outlet:'GL' },
+  { name:'CLARISE',      full:'CHUAH JING PING',              role:'Consultant', outlet:'GY' },
+  { name:'MARGARET',     full:'MARGARET CHIN SIEW THENG',     role:'Consultant', outlet:'GY' },
+  { name:'IRIS',         full:'IRIS LUAH JIE YING',           role:'Therapist',  outlet:'GY' },
+  { name:'AVICIA',       full:'CHENG ZHI YI',                 role:'Therapist',  outlet:'GY' },
+  { name:'QUNNIE',       full:'GOH YU QIAN',                  role:'Therapist',  outlet:'GY' },
+  { name:'MANDY',        full:'MANDY NG ZHI CHING',           role:'CSR',        outlet:'GY', notAttending:true },
+  { name:'DR EVE',       full:'YUEN SHAN LING',               role:'Doctor',     outlet:'GY' },
+  { name:'DR SHEVERN',   full:'SHEVERN YEOH YU RUUN',         role:'Doctor',     outlet:'GY' },
+  { name:'YY',           full:'LIM YEE YIN',                  role:'Consultant', outlet:'RU' },
+  { name:'YEE JING',     full:'CHAI YEE JING',                role:'Consultant', outlet:'RU' },
+  { name:'YAYA',         full:'CHIEW ZIN HUA',                role:'Consultant', outlet:'RU' },
+  { name:'KE XIN',       full:'TAN KE XIN',                   role:'Therapist',  outlet:'RU' },
+  { name:'JANET',        full:'JANET YUN JING HUI',           role:'Therapist',  outlet:'RU' },
+  { name:'SAFENIE',      full:'UN MIN QIN',                   role:'Therapist',  outlet:'RU' },
+  { name:'YEE ANN',      full:'CHUA YEE ANN',                 role:'Therapist',  outlet:'RU' },
+  { name:'YI LING',      full:'TAN YI LING',                  role:'CSR',        outlet:'RU' },
+  { name:'DR LOO',       full:'LOO SHI JIN',                  role:'Doctor',     outlet:'RU' },
+  { name:'DR ROZANNE',   full:'CHANG HUI XIAN',               role:'Doctor',     outlet:'RU' },
+  { name:'DR.KAI',       full:'HONG KHYE HUNG',               role:'Doctor',     outlet:'RU' },
+  { name:'SHARON',       full:'NG SAN FOO',                   role:'AM',         outlet:'JB' },
+  { name:'BEIER',        full:'KHOR BEI SI',                  role:'CSR',        outlet:'MA' },
+  { name:'XUE JING',     full:'TAN SIOK CHING',               role:'Consultant', outlet:'MA' },
+  { name:'JASYE',        full:'LEE JIA YI',                   role:'Consultant', outlet:'MA' },
+  { name:'PEI SHIN',     full:'LEW PEI SHIN',                 role:'Consultant', outlet:'MA' },
+  { name:'JIA LIN',      full:'LEY JIA LIN',                  role:'Consultant', outlet:'MA' },
+  { name:'DR JJ',        full:'LEE JIA JING',                 role:'Doctor',     outlet:'MA' },
+  { name:'DR KENNY',     full:'ANG YEE QUAN',                 role:'Doctor',     outlet:'MA' },
+  { name:'DR LILY',      full:'TANG SZE LI',                  role:'Doctor',     outlet:'MA' },
+  { name:'RAYNA',        full:'RAYNA LIM',                    role:'Therapist',  outlet:'MA' },
+  { name:'JESSY',        full:'FANG HUI YEN',                 role:'Therapist',  outlet:'MA' },
+  { name:'BERYL',        full:'BERYL LIM SEOK HWEE',          role:'Therapist',  outlet:'MA' },
+  { name:'THING THING',  full:'CHEW THING THING',             role:'Therapist',  outlet:'MA' },
+  { name:'XIANG YEE',    full:'KHOO XIANG YEE',               role:'Therapist',  outlet:'MA' },
+  { name:'XIIAO CHYN',   full:'XIIAO CHYN',                   role:'Therapist',  outlet:'MA' },
+  { name:'SANNY',        full:'SONG KE',                      role:'Consultant', outlet:'SU' },
+  { name:'AI NI',        full:'AINI SURAYA BINTI HAMZAH',     role:'Consultant', outlet:'SU' },
+  { name:'JOEN',         full:'TAN KANG ZHI',                 role:'Consultant', outlet:'SU' },
+  { name:'CORRINE',      full:'NG SIU ZHEN',                  role:'Therapist',  outlet:'SU' },
+  { name:'CHERRY',       full:'CHERRY CHEE SHI HUI',          role:'Therapist',  outlet:'SU' },
+  { name:'JESSICA',      full:'LIONG ZI SHAN',                role:'Therapist',  outlet:'SU' },
+  { name:'KATHERINE',    full:'LAW RUI XUAN',                 role:'Therapist',  outlet:'SU' },
+  { name:'QIAN BEI',     full:'LAU QIAN BEI',                 role:'Therapist',  outlet:'SU' },
+  { name:'WEI XUAN',     full:'WONG WEI XUAN',                role:'Therapist',  outlet:'SU' },
+  { name:'DR MAX',       full:'KHOR YI ZHEN',                 role:'Doctor',     outlet:'SU' },
+  { name:'DR ANN',       full:'ANN CHEW LIYEN',               role:'Doctor',     outlet:'SU' },
+  { name:'DR YI SHAN',   full:'CHONG YI SHAN',                role:'Doctor',     outlet:'SU', notAttending:true },
+  { name:'HESTER',       full:'WONG PIT KHI',                 role:'AM',         outlet:'KL' },
+  { name:'ANGEL',        full:'ANGEL NG ANN QI',              role:'Consultant', outlet:'CL' },
+  { name:'KETTY',        full:'HUANG XIAOFEN',                role:'Consultant', outlet:'CL' },
+  { name:'ALICE',        full:'ALICE LEE',                    role:'Consultant', outlet:'CL' },
+  { name:'PINKY',        full:'CHONG LEE FONG',               role:'Consultant', outlet:'CL' },
+  { name:'KAY YEE',      full:'CHIA KAY YEE',                 role:'Consultant', outlet:'CL' },
+  { name:'CASSIE',       full:'CASSIE HO YEN TONG',           role:'Therapist',  outlet:'CL' },
+  { name:'KAI WEI',      full:'NG KAI WEI',                   role:'Therapist',  outlet:'CL' },
+  { name:'SHARON',       full:'FOOK ZHI XUAN',                role:'Therapist',  outlet:'CL' },
+  { name:'KATRINA',      full:'KATRINA SOON YONG QING',       role:'Therapist',  outlet:'CL' },
+  { name:'XIN YI',       full:'OH XIN YI',                    role:'Therapist',  outlet:'CL' },
+  { name:'ELLIS',        full:'LEE AI LIS',                   role:'Therapist',  outlet:'CL' },
+  { name:'ZI YING',      full:'THENG ZI YING',                role:'URAC',       outlet:'CL' },
+  { name:'TAN HUI',      full:'TAN HUI',                      role:'CSR',        outlet:'CL' },
+  { name:'DR.RAINNIE',   full:'WONG HUI HUNG',                role:'Doctor',     outlet:'CL' },
+  { name:'DR.NATALIE',   full:'NATALIE KWONG ZHU WEN',        role:'Doctor',     outlet:'CL' },
+  { name:'DR SONIA',     full:'TEE PUI SIN',                  role:'Doctor',     outlet:'CL' },
+  { name:'DR AGNES',     full:'AGNES LU',                     role:'Doctor',     outlet:'CL' },
+  { name:'BETTY',        full:'BETTY SIA SIEW CHEE',          role:'Consultant', outlet:'PC' },
+  { name:'RACHEL',       full:'KOK CHOY PEI',                 role:'Consultant', outlet:'PC' },
+  { name:'GINA',         full:'GOH SIEW GEK',                 role:'Consultant', outlet:'PC' },
+  { name:'SHUE BIN',     full:'LOW SHUE BIN',                 role:'Consultant', outlet:'PC' },
+  { name:'SU WEN',       full:'CHAI SU WEN',                  role:'Therapist',  outlet:'PC' },
+  { name:'ZHI XIN',      full:'CHEONG ZEE YAN',               role:'Therapist',  outlet:'PC' },
+  { name:'WINNIE',       full:'WINNIE TING QIAN QIAN',        role:'Therapist',  outlet:'PC' },
+  { name:'AMANDA',       full:'AMANDA YII SIEW HIE',          role:'Therapist',  outlet:'PC' },
+  { name:'JOVEY',        full:'TAM SHING LIN',                role:'Therapist',  outlet:'PC' },
+  { name:'SANDY',        full:'NG KA HUI',                    role:'CSR',        outlet:'PC' },
+  { name:'DR.ZAELEY',    full:'CHAN SHIN YEE',                 role:'Doctor',     outlet:'PC' },
+  { name:'DR.TAY',       full:'TAY SU YEE',                   role:'Doctor',     outlet:'PC', notAttending:true },
+  { name:'DR JIN QIAN',  full:'LOO JIN QIAN',                 role:'Doctor',     outlet:'PC' },
+  { name:'ATHENA',       full:'TEO HUI YOKE',                 role:'Consultant', outlet:'SS2' },
+  { name:'BERRY',        full:'KHOO CHIAO MEI',               role:'Consultant', outlet:'SS2' },
+  { name:'SIM MEI',      full:'TANG SIM MEI',                 role:'Consultant', outlet:'SS2', notAttending:true },
+  { name:'VERON',        full:'CHOO YIN WEI',                 role:'Therapist',  outlet:'SS2' },
+  { name:'JESSIE',       full:'LAU JIA CHYI',                 role:'Therapist',  outlet:'SS2' },
+  { name:'TINA',         full:'ESTINA LAI BINTI ABDULLAH',    role:'Therapist',  outlet:'SS2' },
+  { name:'EN NING',      full:'YEONG EN NING',                role:'Therapist',  outlet:'SS2' },
+  { name:'CHING YUE',    full:'LIM CHING YUE',                role:'Therapist',  outlet:'SS2' },
+  { name:'WAN ROU',      full:'SIK WAN ROU',                  role:'Therapist',  outlet:'SS2' },
+  { name:'WAN EN',       full:'YAN WAN EN',                   role:'Therapist',  outlet:'SS2' },
+  { name:'YONG XIN',     full:'LEE YONG XIN',                 role:'CSR',        outlet:'SS2' },
+  { name:'DR. CAITLYN',  full:'LAU CHIN LING',                role:'Doctor',     outlet:'SS2' },
+  { name:'DR.TAN',       full:'TAN CZHIA HAO',                role:'Doctor',     outlet:'SS2' },
+  { name:'DR CASSANDRA', full:'CHAN QING YAN',                role:'Doctor',     outlet:'SS2' },
+  { name:'DR CHIN WEI',  full:'KHOO CHIN WEI',                role:'Doctor',     outlet:'SS2', notAttending:true },
+  { name:'DR EUNICE',    full:'CHAN EUNICE',                  role:'Doctor',     outlet:'SS2' },
+  { name:'DR WEN YUN',   full:'LOO WEN YUN',                  role:'Doctor',     outlet:'SS2' }
+];
+
+// =====================================================================
+// MARK TYPES for proactivity
+// =====================================================================
+const MARK_TYPES = [
+  { emoji:'⭐', label:'Initiative',  cn:'主动积极' },
+  { emoji:'💪', label:'Contribution',cn:'积极贡献' },
+  { emoji:'🌟', label:'Outstanding', cn:'表现突出' },
+  { emoji:'❤️', label:'Team Spirit', cn:'团队精神' },
+  { emoji:'🎯', label:'Focus',       cn:'专注投入' },
+  { emoji:'🏆', label:'Champion',    cn:'冠军气质' },
+];
+
+// =====================================================================
+// FIREBASE / LOCALSTORAGE ABSTRACTION
+// =====================================================================
+const USE_FIREBASE = FB_CONFIG.apiKey !== "PASTE_API_KEY";
+let db = null;
+if (USE_FIREBASE) {
+  try {
+    firebase.initializeApp(FB_CONFIG);
+    db = firebase.firestore();
+  } catch(e) { console.warn('Firebase init failed, using localStorage', e); }
+}
+
+function lsKey(pid) { return 'fol2026_' + pid; }
+function lsGet(pid) { try { return JSON.parse(localStorage.getItem(lsKey(pid)) || '{}'); } catch(e){ return {}; } }
+function lsSet(pid, data) {
+  const cur = lsGet(pid);
+  const merged = deepMerge(cur, data);
+  localStorage.setItem(lsKey(pid), JSON.stringify(merged));
+}
+function deepMerge(a, b) {
+  const r = { ...a };
+  for (const k of Object.keys(b)) {
+    if (Array.isArray(b[k])) r[k] = b[k];
+    else if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k])) r[k] = deepMerge(a[k] || {}, b[k]);
+    else r[k] = b[k];
+  }
+  return r;
+}
+
+async function dbLoad(pid) {
+  if (db) {
+    try {
+      const snap = await db.collection('fol2026').doc(pid).get();
+      return snap.exists ? snap.data() : {};
+    } catch(e) { return lsGet(pid); }
+  }
+  return lsGet(pid);
+}
+
+async function dbSave(pid, data) {
+  if (db) {
+    try { await db.collection('fol2026').doc(pid).set(data, { merge: true }); return; } catch(e) {}
+  }
+  lsSet(pid, data);
+}
+
+async function dbArrayAdd(pid, field, item) {
+  if (db) {
+    try {
+      await db.collection('fol2026').doc(pid).set(
+        { [field]: firebase.firestore.FieldValue.arrayUnion(item) },
+        { merge: true }
+      );
+      return;
+    } catch(e) {}
+  }
+  const cur = lsGet(pid);
+  const arr = Array.isArray(cur[field]) ? cur[field] : [];
+  arr.push(item);
+  cur[field] = arr;
+  localStorage.setItem(lsKey(pid), JSON.stringify(cur));
+}
+
+// =====================================================================
+// APP STATE
+// =====================================================================
+let PID = '', P = null, DATA = {}, IS_ADMIN = false;
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('en-MY', { day:'numeric', month:'short' }) + ' ' +
+         d.toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit' });
+}
+function now() { return USE_FIREBASE && db ? firebase.firestore.Timestamp.now() : new Date().toISOString(); }
+
+// =====================================================================
+// RENDER
+// =====================================================================
+function render() {
+  const p = P;
+  const d = DATA;
+  const present = d.attendance && d.attendance.present;
+  const marks = Array.isArray(d.marks) ? d.marks : [];
+  const growth = Array.isArray(d.growth) ? d.growth : [];
+  const msgs = Array.isArray(d.messages) ? d.messages : [];
+  const whisper = d.angelWhisper || '';
+  const whisperRevealed = d.angelRevealed || false;
+
+  document.getElementById('app').innerHTML = `
+    <!-- Hero -->
+    <div class="hero">
+      <div style="position:absolute;top:12px;left:14px;">
+        ${IS_ADMIN ? `<button onclick="goBack()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:#ccc;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">‹ List</button>` : ''}
+      </div>
+      <div class="fol-logo">FOL</div>
+      <div class="fol-year">— &nbsp; 2 0 2 6 &nbsp; —</div>
+      <div class="hero-divider"><span class="hero-star">✦</span></div>
+    </div>
+
+    <!-- Participant info -->
+    <div class="p-section">
+      <div class="role-pill">${p.role}</div>
+      <div class="p-name">${p.name}</div>
+      <div class="p-full">${p.full}</div>
+      <div class="tags">
+        <span class="tag tag-outlet">📍 ${p.outlet}</span>
+        ${present
+          ? `<span class="tag tag-present">✅ Checked In · ${fmtTime(d.attendance.time)}</span>`
+          : `<span class="tag tag-absent">⏳ Not Yet Checked In</span>`}
+      </div>
+    </div>
+
+    <!-- Sections -->
+    <div class="sections">
+
+      <!-- 1. Angel's Whisper -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">💌</span>
+          <div>
+            <div class="card-title">Angel's Whisper</div>
+            <div class="card-sub">A personal message for you</div>
+          </div>
+        </div>
+        <div class="card-body">
+          ${whisper
+            ? `<div class="whisper-sealed" id="whisperSealed" onclick="revealWhisper()" style="${whisperRevealed?'display:none':''}">
+                 <div class="envelope">💌</div>
+                 <div class="whisper-hint">Tap to reveal · 点击打开</div>
+               </div>
+               <div class="whisper-open ${whisperRevealed?'revealed':''}" id="whisperOpen">
+                 <div class="whisper-label">✦ &nbsp; Your Angel's Whisper &nbsp; ✦</div>
+                 <div class="whisper-text">${whisper}</div>
+                 <div class="whisper-from">— With love, FOL 2026 Committee 🌿</div>
+               </div>`
+            : `<div class="empty-note">Your Angel's Whisper is on its way... 🌙</div>`}
+          ${IS_ADMIN ? `
+            <div class="whisper-admin-edit" style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px">
+              <textarea class="inp" id="whisperInput" rows="3" placeholder="Write a personal message for ${p.name}...">${whisper}</textarea>
+              <button class="btn btn-gold" style="margin-top:8px" onclick="saveWhisper()">💾 Save Angel's Whisper</button>
+            </div>` : ''}
+        </div>
+      </div>
+
+      <!-- 2. Attendance -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">✅</span>
+          <div>
+            <div class="card-title">Attendance</div>
+            <div class="card-sub">FOL 2026 · 3–4 August, Penang</div>
+          </div>
+        </div>
+        <div class="card-body attend-body">
+          ${present
+            ? `<div class="attend-status-txt ok">✅ Present!</div>
+               <div class="attend-time-txt">Checked in: ${fmtTime(d.attendance.time)}${d.attendance.by ? ' · by ' + d.attendance.by : ''}</div>
+               ${IS_ADMIN ? `<br><button class="btn btn-red btn-sm" onclick="unmarkAttendance()">↩ Undo Check-In</button>` : ''}`
+            : `<button class="btn btn-green" onclick="markAttendance()">✅ Mark Attendance · 签到</button>
+               <div class="attend-time-txt">Tap to check in for FOL 2026</div>`}
+        </div>
+      </div>
+
+      <!-- 3. Proactivity Marks -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">⭐</span>
+          <div>
+            <div class="card-title">Proactivity Marks</div>
+            <div class="card-sub">Awarded by the committee</div>
+          </div>
+        </div>
+        <div class="card-body">
+          ${marks.length
+            ? `<div class="marks-count">
+                 <div class="marks-num">${marks.length}</div>
+                 <div class="marks-num-label">Marks Earned</div>
+               </div>
+               <div class="marks-chips">${marks.map(m=>`
+                 <div class="mark-chip">
+                   <span class="me">${m.emoji}</span>
+                   <div>
+                     <div class="ml">${m.label}</div>
+                     <div class="mb">by ${m.by}${m.note ? ' · ' + m.note : ''}</div>
+                   </div>
+                 </div>`).join('')}
+               </div>`
+            : `<div class="empty-note">No marks yet — keep showing up with heart! 💛</div>`}
+          ${IS_ADMIN ? `
+            <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px">
+              <div class="admin-label">Award a mark</div>
+              <div class="mark-btns" id="markBtns">${MARK_TYPES.map((m,i)=>`
+                <button class="mark-btn" onclick="addMark(${i})">${m.emoji} ${m.label}</button>`).join('')}
+              </div>
+              <input class="inp" id="markNote" placeholder="Optional note..." style="margin-top:9px">
+            </div>` : ''}
+        </div>
+      </div>
+
+      <!-- 4. Growth Notes -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">🌱</span>
+          <div>
+            <div class="card-title">Growth</div>
+            <div class="card-sub">Observations from the committee</div>
+          </div>
+        </div>
+        <div class="card-body">
+          ${growth.length
+            ? `<div class="timeline">${growth.map(g=>`
+                <div class="tl-item">
+                  <div class="tl-dot">🌱</div>
+                  <div class="tl-content">
+                    <div class="tl-note">${g.text}</div>
+                    <div class="tl-meta">${fmtTime(g.time)} · ${g.by}</div>
+                  </div>
+                </div>`).join('')}
+              </div>`
+            : `<div class="empty-note">Growth notes will appear here during the event 🌿</div>`}
+          ${IS_ADMIN ? `
+            <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px">
+              <textarea class="inp" id="growthInput" rows="2" placeholder="Write a growth observation for ${p.name}..."></textarea>
+              <button class="btn btn-gold" style="margin-top:8px" onclick="addGrowth()">💾 Add Growth Note</button>
+            </div>` : ''}
+        </div>
+      </div>
+
+      <!-- 5. Leave a Message -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">💬</span>
+          <div>
+            <div class="card-title">Leave a Message</div>
+            <div class="card-sub">Let ${p.name} know you scanned their badge!</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="msg-form">
+            <input class="inp" id="msgFrom" placeholder="Your name · 你的名字">
+            <textarea class="inp" id="msgText" placeholder="Your message · 你的留言"></textarea>
+            <button class="btn btn-gold" onclick="leaveMessage()">💌 Send Message · 发送</button>
+          </div>
+          ${msgs.length
+            ? `<div class="msgs-list">${msgs.slice().reverse().map(m=>`
+                <div class="msg-item">
+                  <div class="msg-from">💬 ${m.from}</div>
+                  <div class="msg-text">${m.text}</div>
+                  <div class="msg-time">${fmtTime(m.time)}</div>
+                </div>`).join('')}
+              </div>`
+            : `<div class="empty-note">Be the first to leave a message! 🌟</div>`}
+        </div>
+      </div>
+
+      <!-- Committee mode button -->
+      <div class="committee-link">
+        <button onclick="openPin()">${IS_ADMIN ? '🔓 Committee Mode Active' : '· Committee ·'}</button>
+      </div>
+
+    </div><!-- /sections -->
+    <div class="page-foot">FRONTLINE OF LOVE 2026 · PENANG</div>
+  `;
+
+  // Re-attach revealed state without animation if already revealed
+  if (whisper && whisperRevealed) {
+    const sealed = document.getElementById('whisperSealed');
+    const open = document.getElementById('whisperOpen');
+    if (sealed) sealed.style.display = 'none';
+    if (open) open.classList.add('revealed');
+  }
+}
+
+// =====================================================================
+// ACTIONS
+// =====================================================================
+async function revealWhisper() {
+  const sealed = document.getElementById('whisperSealed');
+  const open = document.getElementById('whisperOpen');
+  if (!sealed || !open) return;
+  sealed.style.display = 'none';
+  open.classList.add('revealed');
+  DATA.angelRevealed = true;
+  await dbSave(PID, { angelRevealed: true });
+  toast('✨ Your Angel\'s Whisper is revealed!');
+}
+
+async function saveWhisper() {
+  const txt = (document.getElementById('whisperInput')?.value || '').trim();
+  if (!txt) return toast('Please write a message first');
+  await dbSave(PID, { angelWhisper: txt, angelRevealed: false });
+  DATA.angelWhisper = txt;
+  DATA.angelRevealed = false;
+  toast('💌 Angel\'s Whisper saved!');
+  render();
+}
+
+async function markAttendance() {
+  const btn = event?.target;
+  if (btn) btn.disabled = true;
+  const entry = { present: true, time: now(), by: IS_ADMIN ? 'Committee' : 'Self' };
+  await dbSave(PID, { attendance: entry });
+  DATA.attendance = entry;
+  toast('✅ Attendance marked!');
+  render();
+}
+
+async function unmarkAttendance() {
+  await dbSave(PID, { attendance: { present: false, time: null, by: null } });
+  DATA.attendance = { present: false };
+  toast('↩ Check-in undone');
+  render();
+}
+
+async function addMark(typeIdx) {
+  const mt = MARK_TYPES[typeIdx];
+  const note = (document.getElementById('markNote')?.value || '').trim();
+  const mark = { emoji: mt.emoji, label: mt.label, cn: mt.cn, by: 'Committee', note, time: now() };
+  await dbArrayAdd(PID, 'marks', mark);
+  DATA.marks = DATA.marks || [];
+  DATA.marks.push(mark);
+  toast(`${mt.emoji} Mark awarded: ${mt.label}!`);
+  render();
+}
+
+async function addGrowth() {
+  const txt = (document.getElementById('growthInput')?.value || '').trim();
+  if (!txt) return toast('Please write a growth note first');
+  const entry = { text: txt, by: 'Committee', time: now() };
+  await dbArrayAdd(PID, 'growth', entry);
+  DATA.growth = DATA.growth || [];
+  DATA.growth.push(entry);
+  toast('🌱 Growth note added!');
+  render();
+}
+
+async function leaveMessage() {
+  const from = (document.getElementById('msgFrom')?.value || '').trim();
+  const text = (document.getElementById('msgText')?.value || '').trim();
+  if (!from || !text) return toast('Please fill in your name and message');
+  const msg = { from, text, time: now() };
+  await dbArrayAdd(PID, 'messages', msg);
+  DATA.messages = DATA.messages || [];
+  DATA.messages.push(msg);
+  toast('💌 Message sent!');
+  render();
+}
+
+function goBack() {
+  if (!IS_ADMIN) return;
+  history.pushState({}, '', location.pathname);
+  PID = ''; P = null; DATA = {}; IS_ADMIN = sessionStorage.getItem('fol_admin') === '1';
+  renderDirectory();
+}
+
+// =====================================================================
+// PIN / ADMIN
+// =====================================================================
+function openPin() {
+  if (IS_ADMIN) { IS_ADMIN = false; sessionStorage.removeItem('fol_admin'); render(); toast('Committee mode off'); return; }
+  document.getElementById('pinBg').classList.add('on');
+  setTimeout(() => document.getElementById('pinInput')?.focus(), 200);
+}
+function verifyPin() {
+  const val = document.getElementById('pinInput').value;
+  if (val === COMMITTEE_PIN) {
+    IS_ADMIN = true;
+    sessionStorage.setItem('fol_admin', '1');
+    document.getElementById('pinBg').classList.remove('on');
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinErr').textContent = '';
+    render();
+    toast('🔓 Committee mode activated');
+  } else {
+    document.getElementById('pinErr').textContent = 'Incorrect PIN. Please try again.';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+}
+document.getElementById('pinInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') verifyPin(); });
+
+// =====================================================================
+// TOAST
+// =====================================================================
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// =====================================================================
+// DIRECTORY — shown when no ?id= param
+// =====================================================================
+let dirOutlet = '';
+let qrScanner = null;
+
+function renderDirectory() {
+  document.getElementById('app').innerHTML = `
+    <div class="hero">
+      <div class="fol-logo">FOL</div>
+      <div class="fol-year">— &nbsp; 2 0 2 6 &nbsp; —</div>
+      <div class="hero-divider"><span class="hero-star">✦</span></div>
+    </div>
+    <div class="dir-wrap">
+      <!-- Scanner -->
+      <button class="dir-scan-btn" onclick="toggleScanner()">📷 Scan QR Badge</button>
+      <div class="dir-scanner-box" id="dirScannerBox">
+        <div id="dir-qr-reader"></div>
+        <button class="dir-scanner-close" onclick="stopScanner()">✕ Close Scanner</button>
+      </div>
+
+      <!-- Search -->
+      <div class="dir-search-box">
+        <span class="dir-search-icon">🔍</span>
+        <input type="text" id="dirSearch" placeholder="Search name or full name..." oninput="filterDir()">
+      </div>
+
+      <!-- Outlet filter -->
+      <div class="dir-outlet-row" id="dirOutlets">
+        <button class="dir-outlet-btn active" data-o="" onclick="setDirOutlet(this)">All</button>
+        ${['HQ','BM','GL','GY','RU','MA','SU','JB','CL','PC','SS2','KL','PG']
+          .map(o=>`<button class="dir-outlet-btn" data-o="${o}" onclick="setDirOutlet(this)">${o}</button>`).join('')}
+      </div>
+
+      <div class="dir-count" id="dirCount"></div>
+      <div class="dir-list" id="dirList"></div>
+    </div>
+  `;
+  renderDirList();
+}
+
+function renderDirList() {
+  const q = (document.getElementById('dirSearch')?.value || '').toLowerCase().trim();
+  const list = PARTICIPANTS.map((p, i) => ({ p, i })).filter(({ p }) => {
+    if (dirOutlet && p.outlet !== dirOutlet) return false;
+    if (q && !p.name.toLowerCase().includes(q) && !p.full.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const el = document.getElementById('dirList');
+  const countEl = document.getElementById('dirCount');
+  if (!el) return;
+
+  countEl.textContent = `${list.length} participant${list.length !== 1 ? 's' : ''}`;
+
+  el.innerHTML = list.map(({ p, i }) => {
+    const pid = 'P' + String(i + 1).padStart(3, '0');
+    const initials = p.name.replace(/^DR\.?\s*/i, '').trim().slice(0, 2).toUpperCase();
+    return `
+      <div class="dir-item" onclick="loadProfile(${i})">
+        <div class="dir-avatar">${initials}</div>
+        <div class="dir-info">
+          <div class="dir-name">${p.name}</div>
+          <div class="dir-meta">${p.full} · ${p.role}${p.notAttending ? ' · <span style="color:#f08080">Not attending</span>' : ''}</div>
+        </div>
+        <span class="dir-outlet-tag">${p.outlet}</span>
+        <span class="dir-arrow">›</span>
+      </div>`;
+  }).join('');
+}
+
+function filterDir() { renderDirList(); }
+
+function setDirOutlet(btn) {
+  document.querySelectorAll('.dir-outlet-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  dirOutlet = btn.dataset.o;
+  renderDirList();
+}
+
+function toggleScanner() {
+  const box = document.getElementById('dirScannerBox');
+  if (box.classList.contains('on')) { stopScanner(); return; }
+  box.classList.add('on');
+  startScanner();
+}
+
+function startScanner() {
+  if (!window.Html5Qrcode) { toast('Scanner library not loaded — try refreshing'); return; }
+  qrScanner = new Html5Qrcode('dir-qr-reader');
+  qrScanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 220, height: 220 } },
+    (decodedText) => {
+      stopScanner();
+      // Extract id param from scanned URL
+      try {
+        const url = new URL(decodedText);
+        const raw = url.searchParams.get('id') || '';
+        const idx = parseInt(raw.replace(/\D/g,''), 10) - 1;
+        if (idx >= 0 && idx < PARTICIPANTS.length) { loadProfile(idx); return; }
+      } catch(e) {}
+      // Try plain id like "P001"
+      const m = decodedText.match(/P?0*(\d+)/);
+      if (m) { const idx = parseInt(m[1], 10) - 1; if (idx >= 0 && idx < PARTICIPANTS.length) { loadProfile(idx); return; } }
+      toast('QR not recognised — try selecting from the list');
+    },
+    () => {}
+  ).catch(() => toast('Camera access denied — please allow camera permission'));
+}
+
+function stopScanner() {
+  if (qrScanner) { qrScanner.stop().catch(()=>{}); qrScanner = null; }
+  const box = document.getElementById('dirScannerBox');
+  if (box) { box.classList.remove('on'); box.innerHTML = '<div id="dir-qr-reader"></div><button class="dir-scanner-close" onclick="stopScanner()">✕ Close Scanner</button>'; }
+}
+
+async function loadProfile(idx) {
+  stopScanner();
+  PID = 'P' + String(idx + 1).padStart(3, '0');
+  P = PARTICIPANTS[idx];
+  if (sessionStorage.getItem('fol_admin') === '1') IS_ADMIN = true;
+  DATA = await dbLoad(PID);
+  // Update URL without reload
+  history.pushState({}, '', location.pathname + '?id=' + PID);
+  render();
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
+(async function init() {
+  const params = new URLSearchParams(location.search);
+  const raw = params.get('id') || '';
+  const idx = parseInt(raw.replace(/\D/g,''), 10) - 1;
+
+  if (sessionStorage.getItem('fol_admin') === '1') IS_ADMIN = true;
+
+  // No valid ID → show directory only if authenticated
+  if (!raw || isNaN(idx) || idx < 0 || idx >= PARTICIPANTS.length) {
+    if (!IS_ADMIN) {
+      document.getElementById('app').innerHTML = `
+        <div class="hero">
+          <div class="fol-logo">FOL</div>
+          <div class="fol-year">— &nbsp; 2 0 2 6 &nbsp; —</div>
+        </div>
+        <div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;line-height:1.8">
+          <p>👤 Please scan your badge QR code to view your profile</p>
+          <p style="font-size:12px;margin-top:20px;opacity:0.7">If you don't have access, ask a committee member for assistance</p>
+        </div>
+      `;
+      return;
+    }
+    renderDirectory();
+    return;
+  }
+
+  PID = 'P' + String(idx + 1).padStart(3, '0');
+  P = PARTICIPANTS[idx];
+
+  DATA = await dbLoad(PID);
+  if (params.get('admin') === '1') openPin();
+  render();
+})();
+</script>
+</body>
+</html>

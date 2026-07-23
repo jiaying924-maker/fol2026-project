@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOL 2026 · Badge Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Page / Controls ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a1a1a; color: #e0e0e0; font-family: 'Inter', system-ui, sans-serif; }
+.controls {
+  background: #111; border-bottom: 1px solid #333;
+  padding: 18px 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 100;
+}
+.controls h1 { font-size: 16px; font-weight: 700; color: #D4A72C; flex: 1; min-width: 160px; }
+.ctrl-grp { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ctrl-label { font-size: 12px; color: #777; }
+select, input[type=text] {
+  background: #222; border: 1px solid #444; color: #e0e0e0;
+  border-radius: 7px; padding: 7px 12px; font-size: 13px; font-family: inherit; outline: none;
+}
+select:focus, input:focus { border-color: #D4A72C; }
+.btn {
+  background: #D4A72C; color: #000; border: none; border-radius: 8px;
+  padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: background .18s;
+}
+.btn:hover { background: #F0D980; }
+.btn-outline { background: transparent; border: 1px solid #555; color: #ccc; }
+.btn-outline:hover { border-color: #D4A72C; color: #D4A72C; }
+.url-area { display: flex; gap: 8px; align-items: center; background: #181818; border: 1px solid #333; border-radius: 10px; padding: 10px 16px; margin: 16px 24px; }
+.url-label { font-size: 11px; color: #777; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+.url-area input { flex: 1; background: none; border: none; color: #ccc; font-size: 13px; font-family: 'Inter', monospace; outline: none; }
+.url-note { font-size: 11px; color: #555; margin: -8px 24px 12px; }
+.count-bar { padding: 8px 24px; font-size: 12px; color: #666; }
+
+/* ── Badge Grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px 24px 60px;
+}
+
+/* ── Badge Card ── */
+.badge {
+  width: 220px;
+  /* Approx 54mm × 86mm card in pixels (at 96dpi ≈ 204×325) — scaled for screen */
+  aspect-ratio: 220 / 346;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* Top black section */
+.badge-top {
+  background: #000;
+  flex: 0 0 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 4px 0 3px;
+}
+.badge-fol {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 10px;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(212,167,44,0.25);
+}
+.badge-year-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.badge-year-line { flex: 1; height: 1px; background: rgba(255,255,255,0.3); width: 18px; }
+.badge-year { font-size: 8px; letter-spacing: 5px; color: #ccc; font-family: 'Inter', sans-serif; font-weight: 400; }
+.badge-star { color: #D4A72C; font-size: 6px; margin-top: 3px; }
+
+/* Middle white section */
+.badge-mid {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px 6px;
+  gap: 3px;
+}
+.badge-role-pill {
+  background: #111;
+  color: #fff;
+  font-size: 7.5px;
+  letter-spacing: 1.5px;
+  padding: 3px 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 2px;
+  margin-bottom: 2px;
+}
+.badge-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+  text-align: center;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
+}
+.badge-full {
+  font-size: 7.5px;
+  color: #888;
+  letter-spacing: 1px;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.badge-divider-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+}
+.badge-divider-line::before, .badge-divider-line::after { content:''; flex:1; height:1px; background:#ddd; }
+.badge-divider-dot { color: #ccc; font-size: 5px; }
+
+/* QR code */
+.badge-qr {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.badge-qr canvas, .badge-qr img { width: 90px !important; height: 90px !important; }
+.badge-id {
+  font-size: 7px;
+  color: #999;
+  letter-spacing: 2px;
+  font-family: 'Inter', monospace;
+  margin-top: 1px;
+}
+
+/* Bottom black strip */
+.badge-bot {
+  background: #000;
+  flex: 0 0 12%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.badge-bot-line { flex: 1; height: 1px; background: rgba(255,255,255,0.2); max-width: 20px; }
+.badge-theme {
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ── Print styles ── */
+@media print {
+  body { background: #fff; color: #000; }
+  .controls, .url-area, .url-note, .count-bar, .no-print { display: none !important; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 54mm);
+    gap: 6mm;
+    padding: 10mm;
+  }
+  .badge {
+    width: 54mm;
+    height: 86mm;
+    box-shadow: none;
+    border: 0.5pt solid #ddd;
+    border-radius: 3mm;
+    break-inside: avoid;
+  }
+  .badge-fol { font-size: 24pt; }
+  .badge-name { font-size: 11pt; }
+  .badge-role-pill { font-size: 5pt; }
+  .badge-qr { width: 18mm; height: 18mm; }
+  .badge-qr canvas, .badge-qr img { width: 18mm !important; height: 18mm !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- Controls -->
+<div class="controls">
+  <h1>🏷 FOL 2026 — Badge Generator</h1>
+  <div class="ctrl-grp">
+    <span class="ctrl-label">Outlet:</span>
+    <select id="filterOutlet" onchange="filterBadges()">
+      <option value="">All Outlets</option>
+      <option>HQ</option><option>BM</option><option>GL</option><option>GY</option>
+      <option>RU</option><option>MA</option><option>SU</option><option>JB</option>
+      <option>CL</option><option>PC</option><option>SS2</option><option>KL</option><option>PG</option>
+    </select>
+  </div>
+  <div class="ctrl-grp">
+    <span class="ctrl-label">Search:</span>
+    <input type="text" id="searchInput" placeholder="Name..." oninput="filterBadges()" style="width:130px">
+  </div>
+  <button class="btn" onclick="window.print()">🖨 Print Badges</button>
+  <button class="btn btn-outline" onclick="resetFilter()">↺ Show All</button>
+</div>
+
+<!-- Site URL configuration -->
+<div class="url-area">
+  <span class="url-label">Profile URL</span>
+  <input type="text" id="baseUrl" value="https://glistening-rolypoly-3d1eae.netlify.app"
+    onchange="rebuildQRs()" onblur="rebuildQRs()" placeholder="https://glistening-rolypoly-3d1eae.netlify.app">
+  <button class="btn btn-outline" onclick="rebuildQRs()" style="padding:5px 12px;font-size:12px">↺ Rebuild QR</button>
+</div>
+<div class="url-note">
+  ℹ Set your Netlify URL above, then rebuild QR codes before printing.
+  QR links to: <code style="color:#D4A72C">[URL]?id=P001</code> etc.
+</div>
+
+<div class="count-bar" id="countBar"></div>
+
+<!-- Badge grid -->
+<div class="grid" id="badgeGrid"></div>
+
+<script>
+// =====================================================================
+// PARTICIPANTS
+// =====================================================================
+const PARTICIPANTS = [
+  { name:'DR. FONG',     full:'FONG TOH JENG',                role:'CEO',        outlet:'HQ' },
+  { name:'DR. JAYE',     full:'TAN SOO HUA',                  role:'COO',        outlet:'HQ' },
+  { name:'DR. JOVYN',    full:'NG CHIA WEN',                  role:'CTO',        outlet:'HQ' },
+  { name:'DR NICOLE',    full:'NICOLE NG I',                  role:'VTO',        outlet:'HQ' },
+  { name:'DR XUAN',      full:'LIM WEN XUAN',                 role:'LOO',        outlet:'HQ' },
+  { name:'DR JEM',       full:'LIM JIA YING',                 role:'LPO',        outlet:'HQ' },
+  { name:'YU CHUEN',     full:'YU CHUEN',                     role:'CP',         outlet:'HQ' },
+  { name:'JIA XUAN',     full:'LIM JIA XUAN',                 role:'CP',         outlet:'HQ' },
+  { name:'CHING THING',  full:'KOAY CHING THING',             role:'HR',         outlet:'HQ' },
+  { name:'KHAI XUAN',    full:'TAN KHAI XUAN',                role:'HR',         outlet:'HQ' },
+  { name:'CELINE',       full:'CELINE TEH SHYEH YIN',         role:'HR',         outlet:'HQ' },
+  { name:'CAROL',        full:'TAN EE ING',                   role:'PPC',        outlet:'HQ' },
+  { name:'LIANG',        full:'HONG CHOO LIANG',              role:'PPC',        outlet:'HQ' },
+  { name:'XIN RU',       full:'YEOH XIN RU',                  role:'PPC',        outlet:'HQ' },
+  { name:'CATHERINE',    full:'LAO HONG HONG',                role:'QA',         outlet:'HQ' },
+  { name:'JINNY',        full:'LIM JING YEE',                 role:'QA',         outlet:'HQ' },
+  { name:'SHUE HUI',     full:'KOAY SHUE HUI',                role:'QA',         outlet:'HQ' },
+  { name:'TK',           full:'NG TIEN KHOON',                role:'SDA',        outlet:'HQ' },
+  { name:'ADELINE',      full:'LEE KHE HUONG',                role:'RC',         outlet:'HQ' },
+  { name:'叶老师',        full:'YEAP WENG HOE',                role:'ADVISOR',    outlet:'HQ' },
+  { name:'NICOLE',       full:'YEE WEI TING',                 role:'AM',         outlet:'PG' },
+  { name:'PHEI CHIA',    full:'CHEE TOO PHEI CHIA',           role:'AAM',        outlet:'PG' },
+  { name:'WENNIE',       full:'NEOW WENNIE',                  role:'Consultant', outlet:'BM' },
+  { name:'ESTHER',       full:'LOW KER YEE',                  role:'Consultant', outlet:'BM' },
+  { name:'HONEY',        full:'HONEY CHONG THEAN MI',         role:'Consultant', outlet:'BM' },
+  { name:'SHERLYN',      full:'TAN YING SING',                role:'Consultant', outlet:'BM' },
+  { name:'WAN YING',     full:'NGO WAN YING',                 role:'Consultant', outlet:'BM' },
+  { name:'ENNA',         full:'LAW YI ERN',                   role:'Consultant', outlet:'BM' },
+  { name:'TIFFANY',      full:'NG SHI HUI',                   role:'Therapist',  outlet:'BM' },
+  { name:'VENUS',        full:'TEE YEE SYUEN',                role:'Therapist',  outlet:'BM' },
+  { name:'YEN SI',       full:'TAN YEN SI',                   role:'Therapist',  outlet:'BM' },
+  { name:'AI MEI',       full:'CHAN AI MEI',                   role:'Therapist',  outlet:'BM' },
+  { name:'YE YING',      full:'TAN YE YING',                  role:'Therapist',  outlet:'BM' },
+  { name:'YVONNE',       full:'ANG YVONNE',                   role:'Therapist',  outlet:'BM' },
+  { name:'ELAINE',       full:'TAN JIA SHYUAN',               role:'CSR',        outlet:'BM' },
+  { name:'JANICE',       full:'KHOR YI TING',                 role:'CSR',        outlet:'BM' },
+  { name:'DR HONG',      full:'HONG JIA JUN',                 role:'Doctor',     outlet:'BM' },
+  { name:'DR LEENA',     full:'LIM LEE NAA',                  role:'Doctor',     outlet:'BM' },
+  { name:'DR JOLING',    full:'CHEW PHOAY KOON',              role:'Doctor',     outlet:'BM' },
+  { name:'DR EE LING',   full:'TAN EE LING',                  role:'Doctor',     outlet:'BM' },
+  { name:'DR.JOYCE',     full:'JOYCE ONG ZIZHI',              role:'DTTP',       outlet:'GL' },
+  { name:'MINDY',        full:'CHEW SEE MENG',                role:'Consultant', outlet:'GL' },
+  { name:'SYVIN',        full:'FOO LI SHAN',                  role:'Consultant', outlet:'GL' },
+  { name:'HUI XIAN',     full:'KHOO HUI XIAN',                role:'Consultant', outlet:'GL' },
+  { name:'JANICE',       full:'KHOO WEI SIN',                 role:'Consultant', outlet:'GL' },
+  { name:'STELLA',       full:'TAN CHI YAN',                  role:'Consultant', outlet:'GL' },
+  { name:'KATHERINE',    full:'CHAI XIN JIE',                 role:'Consultant', outlet:'GL' },
+  { name:'YUNNY',        full:'ANG YUN QI',                   role:'Therapist',  outlet:'GL' },
+  { name:'KARENE',       full:'HON YI TING',                  role:'Therapist',  outlet:'GL' },
+  { name:'REGINA',       full:"REGINA CH'NG PEI XUAN",        role:'Therapist',  outlet:'GL' },
+  { name:'XIAO WEI',     full:"CH'NG XIAO WEI",               role:'Therapist',  outlet:'GL' },
+  { name:'YEN HOON',     full:'OON YEN HOON',                 role:'Therapist',  outlet:'GL' },
+  { name:'CHLOE',        full:'LEE WAN YU',                   role:'Therapist',  outlet:'GL' },
+  { name:'IRIS',         full:'OOI TZE YEE',                  role:'Therapist',  outlet:'GL' },
+  { name:'TIFFANY',      full:'CHENG ZHI EN',                 role:'Therapist',  outlet:'GL' },
+  { name:'ESTHER',       full:'ESTHER TAN JIA YING',          role:'CSR',        outlet:'GL' },
+  { name:'DR CHERYL',    full:'CHERYL LOW YEE WEN',           role:'Doctor',     outlet:'GL' },
+  { name:'DR MICHELLE',  full:'MICHELLE KOK WAN YING',        role:'Doctor',     outlet:'GL' },
+  { name:'DR CHAN',      full:'CHAN SZE YUET',                 role:'Doctor',     outlet:'GL' },
+  { name:'DR YI WEN',    full:'TAN YI WEN',                   role:'Doctor',     outlet:'GL' },
+  { name:'CLARISE',      full:'CHUAH JING PING',              role:'Consultant', outlet:'GY' },
+  { name:'MARGARET',     full:'MARGARET CHIN SIEW THENG',     role:'Consultant', outlet:'GY' },
+  { name:'IRIS',         full:'IRIS LUAH JIE YING',           role:'Therapist',  outlet:'GY' },
+  { name:'AVICIA',       full:'CHENG ZHI YI',                 role:'Therapist',  outlet:'GY' },
+  { name:'QUNNIE',       full:'GOH YU QIAN',                  role:'Therapist',  outlet:'GY' },
+  { name:'MANDY',        full:'MANDY NG ZHI CHING',           role:'CSR',        outlet:'GY', notAttending:true },
+  { name:'DR EVE',       full:'YUEN SHAN LING',               role:'Doctor',     outlet:'GY' },
+  { name:'DR SHEVERN',   full:'SHEVERN YEOH YU RUUN',         role:'Doctor',     outlet:'GY' },
+  { name:'YY',           full:'LIM YEE YIN',                  role:'Consultant', outlet:'RU' },
+  { name:'YEE JING',     full:'CHAI YEE JING',                role:'Consultant', outlet:'RU' },
+  { name:'YAYA',         full:'CHIEW ZIN HUA',                role:'Consultant', outlet:'RU' },
+  { name:'KE XIN',       full:'TAN KE XIN',                   role:'Therapist',  outlet:'RU' },
+  { name:'JANET',        full:'JANET YUN JING HUI',           role:'Therapist',  outlet:'RU' },
+  { name:'SAFENIE',      full:'UN MIN QIN',                   role:'Therapist',  outlet:'RU' },
+  { name:'YEE ANN',      full:'CHUA YEE ANN',                 role:'Therapist',  outlet:'RU' },
+  { name:'YI LING',      full:'TAN YI LING',                  role:'CSR',        outlet:'RU' },
+  { name:'DR LOO',       full:'LOO SHI JIN',                  role:'Doctor',     outlet:'RU' },
+  { name:'DR ROZANNE',   full:'CHANG HUI XIAN',               role:'Doctor',     outlet:'RU' },
+  { name:'DR.KAI',       full:'HONG KHYE HUNG',               role:'Doctor',     outlet:'RU' },
+  { name:'SHARON',       full:'NG SAN FOO',                   role:'AM',         outlet:'JB' },
+  { name:'BEIER',        full:'KHOR BEI SI',                  role:'CSR',        outlet:'MA' },
+  { name:'XUE JING',     full:'TAN SIOK CHING',               role:'Consultant', outlet:'MA' },
+  { name:'JASYE',        full:'LEE JIA YI',                   role:'Consultant', outlet:'MA' },
+  { name:'PEI SHIN',     full:'LEW PEI SHIN',                 role:'Consultant', outlet:'MA' },
+  { name:'JIA LIN',      full:'LEY JIA LIN',                  role:'Consultant', outlet:'MA' },
+  { name:'DR JJ',        full:'LEE JIA JING',                 role:'Doctor',     outlet:'MA' },
+  { name:'DR KENNY',     full:'ANG YEE QUAN',                 role:'Doctor',     outlet:'MA' },
+  { name:'DR LILY',      full:'TANG SZE LI',                  role:'Doctor',     outlet:'MA' },
+  { name:'RAYNA',        full:'RAYNA LIM',                    role:'Therapist',  outlet:'MA' },
+  { name:'JESSY',        full:'FANG HUI YEN',                 role:'Therapist',  outlet:'MA' },
+  { name:'BERYL',        full:'BERYL LIM SEOK HWEE',          role:'Therapist',  outlet:'MA' },
+  { name:'THING THING',  full:'CHEW THING THING',             role:'Therapist',  outlet:'MA' },
+  { name:'XIANG YEE',    full:'KHOO XIANG YEE',               role:'Therapist',  outlet:'MA' },
+  { name:'XIIAO CHYN',   full:'XIIAO CHYN',                   role:'Therapist',  outlet:'MA' },
+  { name:'SANNY',        full:'SONG KE',                      role:'Consultant', outlet:'SU' },
+  { name:'AI NI',        full:'AINI SURAYA BINTI HAMZAH',     role:'Consultant', outlet:'SU' },
+  { name:'JOEN',         full:'TAN KANG ZHI',                 role:'Consultant', outlet:'SU' },
+  { name:'CORRINE',      full:'NG SIU ZHEN',                  role:'Therapist',  outlet:'SU' },
+  { name:'CHERRY',       full:'CHERRY CHEE SHI HUI',          role:'Therapist',  outlet:'SU' },
+  { name:'JESSICA',      full:'LIONG ZI SHAN',                role:'Therapist',  outlet:'SU' },
+  { name:'KATHERINE',    full:'LAW RUI XUAN',                 role:'Therapist',  outlet:'SU' },
+  { name:'QIAN BEI',     full:'LAU QIAN BEI',                 role:'Therapist',  outlet:'SU' },
+  { name:'WEI XUAN',     full:'WONG WEI XUAN',                role:'Therapist',  outlet:'SU' },
+  { name:'DR MAX',       full:'KHOR YI ZHEN',                 role:'Doctor',     outlet:'SU' },
+  { name:'DR ANN',       full:'ANN CHEW LIYEN',               role:'Doctor',     outlet:'SU' },
+  { name:'DR YI SHAN',   full:'CHONG YI SHAN',                role:'Doctor',     outlet:'SU', notAttending:true },
+  { name:'HESTER',       full:'WONG PIT KHI',                 role:'AM',         outlet:'KL' },
+  { name:'ANGEL',        full:'ANGEL NG ANN QI',              role:'Consultant', outlet:'CL' },
+  { name:'KETTY',        full:'HUANG XIAOFEN',                role:'Consultant', outlet:'CL' },
+  { name:'ALICE',        full:'ALICE LEE',                    role:'Consultant', outlet:'CL' },
+  { name:'PINKY',        full:'CHONG LEE FONG',               role:'Consultant', outlet:'CL' },
+  { name:'KAY YEE',      full:'CHIA KAY YEE',                 role:'Consultant', outlet:'CL' },
+  { name:'CASSIE',       full:'CASSIE HO YEN TONG',           role:'Therapist',  outlet:'CL' },
+  { name:'KAI WEI',      full:'NG KAI WEI',                   role:'Therapist',  outlet:'CL' },
+  { name:'SHARON',       full:'FOOK ZHI XUAN',                role:'Therapist',  outlet:'CL' },
+  { name:'KATRINA',      full:'KATRINA SOON YONG QING',       role:'Therapist',  outlet:'CL' },
+  { name:'XIN YI',       full:'OH XIN YI',                    role:'Therapist',  outlet:'CL' },
+  { name:'ELLIS',        full:'LEE AI LIS',                   role:'Therapist',  outlet:'CL' },
+  { name:'ZI YING',      full:'THENG ZI YING',                role:'URAC',       outlet:'CL' },
+  { name:'TAN HUI',      full:'TAN HUI',                      role:'CSR',        outlet:'CL' },
+  { name:'DR.RAINNIE',   full:'WONG HUI HUNG',                role:'Doctor',     outlet:'CL' },
+  { name:'DR.NATALIE',   full:'NATALIE KWONG ZHU WEN',        role:'Doctor',     outlet:'CL' },
+  { name:'DR SONIA',     full:'TEE PUI SIN',                  role:'Doctor',     outlet:'CL' },
+  { name:'DR AGNES',     full:'AGNES LU',                     role:'Doctor',     outlet:'CL' },
+  { name:'BETTY',        full:'BETTY SIA SIEW CHEE',          role:'Consultant', outlet:'PC' },
+  { name:'RACHEL',       full:'KOK CHOY PEI',                 role:'Consultant', outlet:'PC' },
+  { name:'GINA',         full:'GOH SIEW GEK',                 role:'Consultant', outlet:'PC' },
+  { name:'SHUE BIN',     full:'LOW SHUE BIN',                 role:'Consultant', outlet:'PC' },
+  { name:'SU WEN',       full:'CHAI SU WEN',                  role:'Therapist',  outlet:'PC' },
+  { name:'ZHI XIN',      full:'CHEONG ZEE YAN',               role:'Therapist',  outlet:'PC' },
+  { name:'WINNIE',       full:'WINNIE TING QIAN QIAN',        role:'Therapist',  outlet:'PC' },
+  { name:'AMANDA',       full:'AMANDA YII SIEW HIE',          role:'Therapist',  outlet:'PC' },
+  { name:'JOVEY',        full:'TAM SHING LIN',                role:'Therapist',  outlet:'PC' },
+  { name:'SANDY',        full:'NG KA HUI',                    role:'CSR',        outlet:'PC' },
+  { name:'DR.ZAELEY',    full:'CHAN SHIN YEE',                 role:'Doctor',     outlet:'PC' },
+  { name:'DR.TAY',       full:'TAY SU YEE',                   role:'Doctor',     outlet:'PC', notAttending:true },
+  { name:'DR JIN QIAN',  full:'LOO JIN QIAN',                 role:'Doctor',     outlet:'PC' },
+  { name:'ATHENA',       full:'TEO HUI YOKE',                 role:'Consultant', outlet:'SS2' },
+  { name:'BERRY',        full:'KHOO CHIAO MEI',               role:'Consultant', outlet:'SS2' },
+  { name:'SIM MEI',      full:'TANG SIM MEI',                 role:'Consultant', outlet:'SS2', notAttending:true },
+  { name:'VERON',        full:'CHOO YIN WEI',                 role:'Therapist',  outlet:'SS2' },
+  { name:'JESSIE',       full:'LAU JIA CHYI',                 role:'Therapist',  outlet:'SS2' },
+  { name:'TINA',         full:'ESTINA LAI BINTI ABDULLAH',    role:'Therapist',  outlet:'SS2' },
+  { name:'EN NING',      full:'YEONG EN NING',                role:'Therapist',  outlet:'SS2' },
+  { name:'CHING YUE',    full:'LIM CHING YUE',                role:'Therapist',  outlet:'SS2' },
+  { name:'WAN ROU',      full:'SIK WAN ROU',                  role:'Therapist',  outlet:'SS2' },
+  { name:'WAN EN',       full:'YAN WAN EN',                   role:'Therapist',  outlet:'SS2' },
+  { name:'YONG XIN',     full:'LEE YONG XIN',                 role:'CSR',        outlet:'SS2' },
+  { name:'DR. CAITLYN',  full:'LAU CHIN LING',                role:'Doctor',     outlet:'SS2' },
+  { name:'DR.TAN',       full:'TAN CZHIA HAO',                role:'Doctor',     outlet:'SS2' },
+  { name:'DR CASSANDRA', full:'CHAN QING YAN',                role:'Doctor',     outlet:'SS2' },
+  { name:'DR CHIN WEI',  full:'KHOO CHIN WEI',                role:'Doctor',     outlet:'SS2', notAttending:true },
+  { name:'DR EUNICE',    full:'CHAN EUNICE',                  role:'Doctor',     outlet:'SS2' },
+  { name:'DR WEN YUN',   full:'LOO WEN YUN',                  role:'Doctor',     outlet:'SS2' }
+];
+
+// =====================================================================
+// BUILD BADGES
+// =====================================================================
+let currentFilter = [];
+
+function getBaseUrl() {
+  return (document.getElementById('baseUrl').value || '').trim();
+}
+
+function buildBadge(p, idx) {
+  const pid = 'P' + String(idx + 1).padStart(3, '0');
+  const idLabel = pid.replace('P', '') + String(idx+1).padStart(5,'0').slice(2);
+  const url = getBaseUrl() + '?id=' + pid;
+  const qrId = 'qr-' + pid;
+  const na = p.notAttending ? ' style="opacity:0.45"' : '';
+
+  return `
+    <div class="badge"${na} data-outlet="${p.outlet}" data-name="${p.name.toLowerCase()} ${p.full.toLowerCase()}" data-pid="${pid}">
+      <div class="badge-top">
+        <div class="badge-fol">FOL</div>
+        <div class="badge-year-row">
+          <div class="badge-year-line"></div>
+          <div class="badge-year">2 0 2 6</div>
+          <div class="badge-year-line"></div>
+        </div>
+        <div class="badge-star">✦</div>
+      </div>
+      <div class="badge-mid">
+        <div class="badge-role-pill">${p.role}${p.notAttending ? ' · N/A' : ''}</div>
+        <div class="badge-name">${p.name}</div>
+        <div class="badge-full">${p.full}</div>
+        <div class="badge-divider-line"><span class="badge-divider-dot">✦</span></div>
+        <div class="badge-qr" id="${qrId}"></div>
+        <div class="badge-id">${pid} · ${p.outlet}</div>
+      </div>
+      <div class="badge-bot">
+        <div class="badge-bot-line"></div>
+        <div class="badge-theme">— BREAK TODAY · BUILD TOMORROW —</div>
+        <div class="badge-bot-line"></div>
+      </div>
+    </div>`;
+}
+
+function generateQR(pid, url) {
+  const el = document.getElementById('qr-' + pid);
+  if (!el || el.children.length > 0) return;
+  try {
+    new QRCode(el, {
+      text: url,
+      width: 64,
+      height: 64,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    el.innerHTML = `<div style="width:90px;height:90px;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;text-align:center">QR<br>${pid}</div>`;
+  }
+}
+
+function renderBadges(list) {
+  const grid = document.getElementById('badgeGrid');
+  grid.innerHTML = list.map((p, localIdx) => {
+    const globalIdx = PARTICIPANTS.indexOf(p);
+    return buildBadge(p, globalIdx);
+  }).join('');
+
+  // Generate QR codes after DOM is ready
+  requestAnimationFrame(() => {
+    const base = getBaseUrl();
+    list.forEach(p => {
+      const globalIdx = PARTICIPANTS.indexOf(p);
+      const pid = 'P' + String(globalIdx + 1).padStart(3, '0');
+      generateQR(pid, base + '?id=' + pid);
+    });
+    document.getElementById('countBar').textContent =
+      `Showing ${list.length} badges${list.length < PARTICIPANTS.length ? ' of ' + PARTICIPANTS.length + ' total' : ''}`;
+  });
+}
+
+function filterBadges() {
+  const outlet = document.getElementById('filterOutlet').value;
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  let list = PARTICIPANTS;
+  if (outlet) list = list.filter(p => p.outlet === outlet);
+  if (search) list = list.filter(p =>
+    p.name.toLowerCase().includes(search) || p.full.toLowerCase().includes(search)
+  );
+  renderBadges(list);
+}
+
+function resetFilter() {
+  document.getElementById('filterOutlet').value = '';
+  document.getElementById('searchInput').value = '';
+  renderBadges(PARTICIPANTS);
+}
+
+function rebuildQRs() {
+  filterBadges();
+}
+
+// Initial render
+renderBadges(PARTICIPANTS);
+</script>
+</body>
+</html>
