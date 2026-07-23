@@ -537,28 +537,12 @@ function render() {
         </div>
         <div class="card-body">
           ${marks.length
-            ? `<div class="marks-count">
+            ? `<div style="text-align:center;padding:20px;font-size:48px;">${'⭐'.repeat(marks.length)}</div>
+               <div class="marks-count">
                  <div class="marks-num">${marks.length}</div>
-                 <div class="marks-num-label">Marks Earned</div>
-               </div>
-               <div class="marks-chips">${marks.map(m=>`
-                 <div class="mark-chip">
-                   <span class="me">${m.emoji}</span>
-                   <div>
-                     <div class="ml">${m.label}</div>
-                     <div class="mb">by ${m.by}${m.note ? ' · ' + m.note : ''}</div>
-                   </div>
-                 </div>`).join('')}
+                 <div class="marks-num-label">Stars Earned</div>
                </div>`
             : `<div class="empty-note">No marks yet — keep showing up with heart! 💛</div>`}
-          ${IS_ADMIN ? `
-            <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px">
-              <div class="admin-label">Award a mark</div>
-              <div class="mark-btns" id="markBtns">${MARK_TYPES.map((m,i)=>`
-                <button class="mark-btn" onclick="addMark(${i})">${m.emoji} ${m.label}</button>`).join('')}
-              </div>
-              <input class="inp" id="markNote" placeholder="Optional note..." style="margin-top:9px">
-            </div>` : ''}
         </div>
       </div>
 
