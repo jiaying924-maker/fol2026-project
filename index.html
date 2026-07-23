@@ -401,11 +401,15 @@ if (USE_FIREBASE) {
   try {
     firebase.initializeApp(FB_CONFIG);
     db = firebase.firestore();
-    setTimeout(() => {
-      const el = document.getElementById('fbStatus');
-      if (el) el.style.display = 'block';
-    }, 500);
-  } catch(e) { console.warn('Firebase init failed, using localStorage', e); }
+    console.log('✅ Firebase initialized');
+    const fbEl = document.getElementById('fbStatus');
+    if (fbEl) {
+      fbEl.style.display = 'block';
+      fbEl.innerHTML = '🔥 Firebase: Ready';
+    }
+  } catch(e) {
+    console.error('❌ Firebase init failed:', e);
+  }
 }
 
 function lsKey(pid) { return 'fol2026_' + pid; }
