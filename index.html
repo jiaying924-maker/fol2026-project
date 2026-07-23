@@ -444,8 +444,13 @@ async function dbArrayAdd(pid, field, item) {
         { [field]: firebase.firestore.FieldValue.arrayUnion(item) },
         { merge: true }
       );
+      console.log(`✅ Firebase: Added to ${pid}.${field}`);
       return;
-    } catch(e) {}
+    } catch(e) {
+      console.error(`❌ Firebase write failed for ${pid}:`, e);
+    }
+  } else {
+    console.warn(`⚠️ Firebase not available, using localStorage for ${pid}`);
   }
   const cur = lsGet(pid);
   const arr = Array.isArray(cur[field]) ? cur[field] : [];
