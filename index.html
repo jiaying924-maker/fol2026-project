@@ -923,6 +923,13 @@ async function loadProfile(idx) {
 
   if (sessionStorage.getItem('fol_admin') === '1') IS_ADMIN = true;
 
+  // Check for admin login first
+  if (params.get('admin') === '1') {
+    document.getElementById('app').innerHTML = `<div style="text-align:center;padding:80px 20px;color:#555;font-size:15px">Loading...</div>`;
+    openPin();
+    return;
+  }
+
   // No valid ID → show directory only if authenticated
   if (!raw || isNaN(idx) || idx < 0 || idx >= PARTICIPANTS.length) {
     if (!IS_ADMIN) {
@@ -947,7 +954,6 @@ async function loadProfile(idx) {
   P = PARTICIPANTS[idx];
 
   DATA = await dbLoad(PID);
-  if (params.get('admin') === '1') openPin();
   render();
 })();
 </script>
