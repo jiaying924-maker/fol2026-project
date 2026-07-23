@@ -537,7 +537,9 @@ function render() {
         </div>
         <div class="card-body">
           ${marks.length
-            ? `<div style="text-align:center;padding:20px;font-size:48px;">${'⭐'.repeat(marks.length)}</div>
+            ? `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;place-items:center;padding:20px;font-size:48px;">
+                 ${Array.from({length:marks.length}).map(() => '<div>⭐</div>').join('')}
+               </div>
                <div class="marks-count">
                  <div class="marks-num">${marks.length}</div>
                  <div class="marks-num-label">Stars Earned</div>
