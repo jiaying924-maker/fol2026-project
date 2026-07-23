@@ -925,8 +925,8 @@ async function loadProfile(idx) {
 
   // Check for admin login first
   if (params.get('admin') === '1') {
-    document.getElementById('app').innerHTML = `<div style="text-align:center;padding:80px 20px;color:#555;font-size:15px">Loading...</div>`;
-    openPin();
+    document.getElementById('app').innerHTML = `<div class="hero"><div class="fol-logo">FOL</div><div class="fol-year">— &nbsp; 2 0 2 6 &nbsp; —</div></div>`;
+    setTimeout(() => openPin(), 100);
     return;
   }
 
