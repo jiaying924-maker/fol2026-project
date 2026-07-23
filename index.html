@@ -683,6 +683,16 @@ async function updateDirScore(idx) {
   if (el) el.textContent = score;
 }
 
+async function resetAllData() {
+  if (!confirm('⚠️ Reset ALL attendance and scores for ALL 155 participants? This cannot be undone!')) return;
+  for (let i = 0; i < PARTICIPANTS.length; i++) {
+    const pid = 'P' + String(i + 1).padStart(3, '0');
+    await dbSave(pid, { attendance: { present: false }, marks: [] });
+  }
+  toast('✅ All data reset!');
+  renderDirList();
+}
+
 async function sortDirByScore() {
   const q = (document.getElementById('dirSearch')?.value || '').toLowerCase().trim();
   let list = PARTICIPANTS.map((p, i) => ({ p, i })).filter(({ p }) => {
@@ -840,6 +850,7 @@ function renderDirectory() {
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <div class="dir-count" id="dirCount" style="flex:1;"></div>
         <button onclick="sortDirByScore()" style="background:rgba(212,167,44,0.2);border:1px solid rgba(212,167,44,0.4);color:var(--gold);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;">↓ Sort Score</button>
+        <button onclick="resetAllData()" style="background:rgba(204,51,51,0.2);border:1px solid rgba(204,51,51,0.4);color:#f08080;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;">🔄 Reset All</button>
       </div>
       <div class="dir-list" id="dirList"></div>
     </div>
