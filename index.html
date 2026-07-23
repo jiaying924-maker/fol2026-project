@@ -651,10 +651,12 @@ async function addMark(typeIdx) {
 
 async function addDirMarks(idx, count) {
   const pid = 'P' + String(idx + 1).padStart(3, '0');
+  const data = await dbLoad(pid);
+  data.marks = Array.isArray(data.marks) ? data.marks : [];
   for (let i = 0; i < count; i++) {
-    const mark = { by: 'Committee', time: now() };
-    await dbArrayAdd(pid, 'marks', mark);
+    data.marks.push({ by: 'Committee', time: now() });
   }
+  await dbSave(pid, { marks: data.marks });
   updateDirScore(idx);
   toast(`✅ +${count} marks added to ${PARTICIPANTS[idx].name}!`);
 }
