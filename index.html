@@ -704,12 +704,12 @@ async function updateDirScore(idx) {
 }
 
 async function resetAllData() {
-  if (!confirm('⚠️ Reset ALL attendance and scores for ALL 155 participants? This cannot be undone!')) return;
+  if (!confirm('⚠️ RESET EVERYTHING for ALL 155 participants?\n\n✓ Clear all attendance\n✓ Clear all marks & scores\n✓ Clear all messages\n\nThis CANNOT be undone!')) return;
   for (let i = 0; i < PARTICIPANTS.length; i++) {
     const pid = 'P' + String(i + 1).padStart(3, '0');
-    await dbSave(pid, { attendance: { present: false }, marks: [] });
+    await dbSave(pid, { attendance: { present: false }, marks: [], messages: [] });
   }
-  toast('✅ All data reset!');
+  toast('✅ All data reset! Event ready!');
   renderDirList();
 }
 
