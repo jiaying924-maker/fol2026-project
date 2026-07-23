@@ -766,11 +766,13 @@ async function leaveMessage() {
   if (!to) return toast('Please select a participant');
   if (!from || !text) return toast('Please fill in your name and message');
   const msg = { from, text, time: now() };
+  const recipientName = PARTICIPANTS.find((p,i) => 'P' + String(i+1).padStart(3,'0') === to)?.name || 'Unknown';
   await dbArrayAdd(to, 'messages', msg);
   document.getElementById('msgFrom').value = '';
   document.getElementById('msgText').value = '';
   document.getElementById('msgTo').value = '';
-  toast(`💌 Message sent to ${PARTICIPANTS.find((p,i) => 'P' + String(i+1).padStart(3,'0') === to)?.name}!`);
+  console.log(`Message saved to ${to} (${recipientName}):`, msg);
+  toast(`💌 Message sent to ${recipientName}! Go to their profile to confirm.`);
 }
 
 function goBack() {
