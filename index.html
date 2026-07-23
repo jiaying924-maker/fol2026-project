@@ -649,22 +649,25 @@ async function addMark(typeIdx) {
   render();
 }
 
-async function addDirMark(idx) {
+async function addDirMarks(idx, count) {
   const pid = 'P' + String(idx + 1).padStart(3, '0');
-  const mark = { by: 'Committee', time: now() };
-  await dbArrayAdd(pid, 'marks', mark);
+  for (let i = 0; i < count; i++) {
+    const mark = { by: 'Committee', time: now() };
+    await dbArrayAdd(pid, 'marks', mark);
+  }
   updateDirScore(idx);
-  toast(`✅ Mark added to ${PARTICIPANTS[idx].name}!`);
+  toast(`✅ +${count} marks added to ${PARTICIPANTS[idx].name}!`);
 }
 
-async function deductDirMark(idx) {
+async function deductDirMarks(idx, count) {
   const pid = 'P' + String(idx + 1).padStart(3, '0');
   const data = await dbLoad(pid);
   if (Array.isArray(data.marks) && data.marks.length > 0) {
-    data.marks.pop();
+    const removeCount = Math.min(count, data.marks.length);
+    data.marks = data.marks.slice(0, -removeCount);
     await dbSave(pid, { marks: data.marks });
     updateDirScore(idx);
-    toast(`❌ Mark deducted from ${PARTICIPANTS[idx].name}!`);
+    toast(`❌ -${removeCount} marks deducted from ${PARTICIPANTS[idx].name}!`);
   } else {
     toast('⚠️ No marks to deduct');
   }
@@ -676,6 +679,18 @@ async function updateDirScore(idx) {
   const score = Array.isArray(data.marks) ? data.marks.length : 0;
   const el = document.getElementById('score-' + pid);
   if (el) el.textContent = score;
+}
+
+function sortDirByScore() {
+  const list = getCurrentDirList();
+  list.sort(async (a, b) => {
+    const pidA = 'P' + String(a.i + 1).padStart(3, '0');
+    const pidB = 'P' + String(b.i + 1).padStart(3, '0');
+    const scoreA = Array.isArray((await dbLoad(pidA)).marks) ? (await dbLoad(pidA)).marks.length : 0;
+    const scoreB = Array.isArray((await dbLoad(pidB)).marks) ? (await dbLoad(pidB)).marks.length : 0;
+    return scoreB - scoreA;
+  });
+  renderDirListCustom(list);
 }
 
 async function addGrowth() {
@@ -783,7 +798,10 @@ function renderDirectory() {
           .map(o=>`<button class="dir-outlet-btn" data-o="${o}" onclick="setDirOutlet(this)">${o}</button>`).join('')}
       </div>
 
-      <div class="dir-count" id="dirCount"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <div class="dir-count" id="dirCount" style="flex:1;"></div>
+        <button onclick="sortDirByScore()" style="background:rgba(212,167,44,0.2);border:1px solid rgba(212,167,44,0.4);color:var(--gold);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;">↓ Sort Score</button>
+      </div>
       <div class="dir-list" id="dirList"></div>
     </div>
   `;
@@ -819,9 +837,9 @@ function renderDirList() {
           </div>
         </div>
         <span class="dir-outlet-tag">${p.outlet}</span>
-        <button onclick="event.stopPropagation();addDirMark(${i})" style="background:var(--green);border:none;color:#000;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">+ Add</button>
-        <button onclick="event.stopPropagation();deductDirMark(${i})" style="background:var(--red);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">- Deduct</button>
-        <div id="score-${pid}" style="min-width:40px;text-align:center;font-weight:600;color:var(--gold)">0</div>
+        <button onclick="event.stopPropagation();addDirMarks(${i},3)" style="background:var(--green);border:none;color:#000;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">+3</button>
+        <button onclick="event.stopPropagation();deductDirMarks(${i},2)" style="background:var(--red);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">-2</button>
+        <div id="score-${pid}" style="min-width:50px;text-align:center;font-weight:600;color:var(--gold);font-size:18px;">0</div>
       </div>`;
   }).join('');
 }
