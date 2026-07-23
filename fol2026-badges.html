@@ -404,7 +404,9 @@ const PARTICIPANTS = [
 let currentFilter = [];
 
 function getBaseUrl() {
-  return (document.getElementById('baseUrl').value || '').trim();
+  let url = (document.getElementById('baseUrl').value || '').trim();
+  if (!url.startsWith('http')) url = 'https://' + url;
+  return url;
 }
 
 function buildBadge(p, idx) {
