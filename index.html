@@ -1025,7 +1025,13 @@ async function loadProfile(idx) {
 
   // Render immediately, then load Firestore data in background
   DATA = {};
-  render();
+  console.log('Init: Loading profile', PID, P);
+  try {
+    render();
+    console.log('Init: Profile rendered');
+  } catch(e) {
+    console.error('Init: Render error:', e);
+  }
   dbLoad(PID).then(d => { DATA = d; render(); }).catch(e => {});
 })();
 </script>
