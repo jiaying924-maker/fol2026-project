@@ -975,15 +975,10 @@ async function loadProfile(idx) {
   PID = 'P' + String(idx + 1).padStart(3, '0');
   P = PARTICIPANTS[idx];
   if (sessionStorage.getItem('fol_admin') === '1') IS_ADMIN = true;
-  // Load from Firestore with 3-second timeout
-  try {
-    const loadPromise = dbLoad(PID);
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
-    DATA = await Promise.race([loadPromise, timeoutPromise]);
-  } catch(e) {
-    DATA = {};
-  }
-  // Update URL without reload
+  // Load Firestore data asynchronously without blocking render
+  DATA = {};
+  dbLoad(PID).then(d => { DATA = d; render(); }).catch(e => { DATA = {}; render(); });
+  // Update URL and render immediately with empty data
   history.pushState({}, '', location.pathname + '?id=' + PID);
   render();
 }
@@ -1028,15 +1023,10 @@ async function loadProfile(idx) {
   PID = 'P' + String(idx + 1).padStart(3, '0');
   P = PARTICIPANTS[idx];
 
-  // Load from Firestore with 3-second timeout, fallback to localStorage
-  try {
-    const loadPromise = dbLoad(PID);
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
-    DATA = await Promise.race([loadPromise, timeoutPromise]);
-  } catch(e) {
-    DATA = {};
-  }
+  // Render immediately, then load Firestore data in background
+  DATA = {};
   render();
+  dbLoad(PID).then(d => { DATA = d; render(); }).catch(e => {});
 })();
 </script>
 </body>
