@@ -975,7 +975,14 @@ async function loadProfile(idx) {
   PID = 'P' + String(idx + 1).padStart(3, '0');
   P = PARTICIPANTS[idx];
   if (sessionStorage.getItem('fol_admin') === '1') IS_ADMIN = true;
-  DATA = await dbLoad(PID);
+  // Load from Firestore with 3-second timeout
+  try {
+    const loadPromise = dbLoad(PID);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+    DATA = await Promise.race([loadPromise, timeoutPromise]);
+  } catch(e) {
+    DATA = {};
+  }
   // Update URL without reload
   history.pushState({}, '', location.pathname + '?id=' + PID);
   render();
@@ -1021,7 +1028,14 @@ async function loadProfile(idx) {
   PID = 'P' + String(idx + 1).padStart(3, '0');
   P = PARTICIPANTS[idx];
 
-  DATA = await dbLoad(PID);
+  // Load from Firestore with 3-second timeout, fallback to localStorage
+  try {
+    const loadPromise = dbLoad(PID);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+    DATA = await Promise.race([loadPromise, timeoutPromise]);
+  } catch(e) {
+    DATA = {};
+  }
   render();
 })();
 </script>
