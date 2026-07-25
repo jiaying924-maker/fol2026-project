@@ -241,8 +241,8 @@ select:focus, input:focus { border-color: #D4A72C; }
 <!-- Site URL configuration -->
 <div class="url-area">
   <span class="url-label">Profile URL</span>
-  <input type="text" id="baseUrl" value="https://glistening-rolypoly-3d1eae.netlify.app"
-    onchange="rebuildQRs()" onblur="rebuildQRs()" placeholder="https://glistening-rolypoly-3d1eae.netlify.app">
+  <input type="text" id="baseUrl" value="https://jiaying924-maker.github.io/fol2026-project"
+    onchange="rebuildQRs()" onblur="rebuildQRs()" placeholder="https://jiaying924-maker.github.io/fol2026-project">
   <button class="btn btn-outline" onclick="rebuildQRs()" style="padding:5px 12px;font-size:12px">↺ Rebuild QR</button>
 </div>
 <div class="url-note">
@@ -357,8 +357,8 @@ const PARTICIPANTS = [
   { name:'SANNY',        full:'SONG KE',                      role:'Consultant', outlet:'SU' },
   { name:'AI NI',        full:'AINI SURAYA BINTI HAMZAH',     role:'Consultant', outlet:'SU' },
   { name:'JOEN',         full:'TAN KANG ZHI',                 role:'Consultant', outlet:'SU' },
-  { name:'CORRINE',      full:'NG SIU ZHEN',                  role:'Therapist',  outlet:'SU' },
-  { name:'CHERRY',       full:'CHERRY CHEE SHI HUI',          role:'Therapist',  outlet:'SU' },
+  { name:'CORRINE',      full:'NG SIU ZHEN',                  role:'Consultant', outlet:'SU' },
+  { name:'CHERRY',       full:'CHERRY CHEE SHI HUI',          role:'CSR',        outlet:'SU' },
   { name:'JESSICA',      full:'LIONG ZI SHAN',                role:'Therapist',  outlet:'SU' },
   { name:'KATHERINE',    full:'LAW RUI XUAN',                 role:'Therapist',  outlet:'SU' },
   { name:'QIAN BEI',     full:'LAU QIAN BEI',                 role:'Therapist',  outlet:'SU' },
@@ -400,7 +400,7 @@ const PARTICIPANTS = [
   { name:'ATHENA',       full:'TEO HUI YOKE',                 role:'Consultant', outlet:'SS2' },
   { name:'BERRY',        full:'KHOO CHIAO MEI',               role:'Consultant', outlet:'SS2' },
   { name:'SIM MEI',      full:'TANG SIM MEI',                 role:'Consultant', outlet:'SS2', notAttending:true },
-  { name:'VERON',        full:'CHOO YIN WEI',                 role:'Therapist',  outlet:'SS2' },
+  { name:'VERON',        full:'CHOO YIN WEI',                 role:'Consultant', outlet:'SS2' },
   { name:'JESSIE',       full:'LAU JIA CHYI',                 role:'Therapist',  outlet:'SS2' },
   { name:'TINA',         full:'ESTINA LAI BINTI ABDULLAH',    role:'Therapist',  outlet:'SS2' },
   { name:'EN NING',      full:'YEONG EN NING',                role:'Therapist',  outlet:'SS2' },
@@ -409,7 +409,7 @@ const PARTICIPANTS = [
   { name:'WAN EN',       full:'YAN WAN EN',                   role:'Therapist',  outlet:'SS2' },
   { name:'YONG XIN',     full:'LEE YONG XIN',                 role:'CSR',        outlet:'SS2' },
   { name:'DR. CAITLYN',  full:'LAU CHIN LING',                role:'Doctor',     outlet:'SS2' },
-  { name:'DR.TAN',       full:'TAN CZHIA HAO',                role:'Doctor',     outlet:'SS2' },
+  { name:'DR.CZHIA HAO', full:'TAN CZHIA HAO',                role:'Doctor',     outlet:'SS2' },
   { name:'DR CASSANDRA', full:'CHAN QING YAN',                role:'Doctor',     outlet:'SS2' },
   { name:'DR CHIN WEI',  full:'KHOO CHIN WEI',                role:'Doctor',     outlet:'SS2', notAttending:true },
   { name:'DR EUNICE',    full:'CHAN EUNICE',                  role:'Doctor',     outlet:'SS2' },
