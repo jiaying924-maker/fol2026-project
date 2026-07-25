@@ -493,6 +493,11 @@ function now() { return USE_FIREBASE && db ? firebase.firestore.Timestamp.now() 
 // RENDER
 // =====================================================================
 function render() {
+  console.log('render() called with P=', P, 'DATA=', DATA);
+  if (!P) {
+    document.getElementById('app').innerHTML = '<div style="color:red;padding:40px">ERROR: P is null</div>';
+    return;
+  }
   const p = P;
   const d = DATA;
   const present = d.attendance && d.attendance.present;
