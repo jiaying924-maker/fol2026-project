@@ -4,76 +4,127 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FOL 2026 · Print Badges</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
-.controls { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-select, input { padding: 8px 12px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-button { padding: 10px 20px; margin: 5px; background: #D4A72C; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a1a1a; color: #e0e0e0; font-family: 'Inter', system-ui, sans-serif; padding: 20px; }
+.controls { background: #111; border: 1px solid #333; padding: 18px 24px; border-radius: 8px; margin-bottom: 20px; }
+.controls h2 { font-size: 16px; color: #D4A72C; margin-bottom: 12px; }
+select, input { background: #222; border: 1px solid #444; color: #e0e0e0; border-radius: 7px; padding: 7px 12px; font-size: 13px; font-family: inherit; margin: 5px; }
+select:focus, input:focus { border-color: #D4A72C; }
+button { background: #D4A72C; color: #000; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; margin: 5px; }
 button:hover { background: #F0D980; }
+#count { margin-top: 10px; font-size: 12px; color: #777; }
 
-@media print {
-  body { background: #fff; padding: 0; margin: 0; }
-  .controls { display: none; }
-  .badge { page-break-after: always; }
-  .page-break { page-break-after: always; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
 }
 
 .badge {
-  width: 50mm;
-  height: 80mm;
-  margin: 10px auto;
-  background: #fff;
-  border: 1px solid #ddd;
+  width: 220px;
+  aspect-ratio: 220 / 346;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07);
   display: flex;
   flex-direction: column;
+  background: #fff;
   font-family: 'Cormorant Garamond', serif;
+  page-break-inside: avoid;
 }
 
 .badge-top {
-  flex: 0 0 20%;
   background: #000;
-  color: #fff;
+  flex: 0 0 20%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #333;
+  padding: 4px 0 3px;
 }
-
-.badge-top .fol { font-size: 24px; font-weight: 700; letter-spacing: 3px; }
-.badge-top .year { font-size: 9px; color: #D4A72C; margin-top: 2px; letter-spacing: 1px; }
-.badge-top .star { font-size: 14px; color: #D4A72C; margin-top: 1px; }
+.badge-fol { font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #fff; line-height: 1; }
+.badge-year-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.badge-year-line { flex: 1; height: 1px; background: rgba(255,255,255,0.3); width: 18px; }
+.badge-year { font-size: 8px; letter-spacing: 5px; color: #ccc; font-family: 'Inter', sans-serif; font-weight: 400; }
+.badge-star { color: #D4A72C; font-size: 6px; margin-top: 3px; }
 
 .badge-mid {
   flex: 1;
-  padding: 6px;
+  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  background: #fff;
+  padding: 8px 12px 6px;
+  gap: 3px;
 }
-
-.role { font-size: 8px; background: #000; color: #fff; padding: 3px 8px; margin-bottom: 4px; border-radius: 2px; font-weight: 600; }
-.name { font-size: 13px; font-weight: 600; color: #000; margin-bottom: 1px; line-height: 1.1; }
-.full { font-size: 9px; color: #777; margin-bottom: 4px; line-height: 1.1; }
-.pid { font-size: 18px; font-weight: 700; background: #000; color: #fff; padding: 6px 12px; margin: 3px 0; border-radius: 3px; }
-.outlet { font-size: 8px; color: #999; margin-top: 3px; }
+.badge-role-pill {
+  background: #111;
+  color: #fff;
+  font-size: 7.5px;
+  letter-spacing: 1.5px;
+  padding: 3px 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 2px;
+  margin-bottom: 2px;
+}
+.badge-name { font-size: 18px; font-weight: 700; color: #000; text-align: center; letter-spacing: 0.3px; line-height: 1.1; }
+.badge-full { font-size: 7.5px; color: #888; letter-spacing: 1px; font-family: 'Inter', sans-serif; text-transform: uppercase; margin-top: 1px; }
+.badge-divider-line { display: flex; align-items: center; gap: 4px; margin: 4px 0; }
+.badge-divider-line::before, .badge-divider-line::after { content:''; flex:1; height:1px; background:#ddd; }
+.badge-divider-dot { color: #ccc; font-size: 5px; }
+.badge-qr { width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; }
+.badge-qr canvas, .badge-qr img { width: 90px !important; height: 90px !important; }
+.badge-id { font-size: 7px; color: #999; letter-spacing: 2px; font-family: 'Inter', monospace; margin-top: 1px; }
 
 .badge-bot {
-  flex: 0 0 16%;
   background: #000;
-  color: #888;
+  flex: 0 0 12%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
-  letter-spacing: 0.5px;
-  text-align: center;
-  border-top: 1px solid #333;
-  padding: 4px;
+  gap: 8px;
+}
+.badge-bot-line { flex: 1; height: 1px; background: rgba(255,255,255,0.2); max-width: 20px; }
+.badge-theme { font-size: 8px; letter-spacing: 3px; color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; text-transform: uppercase; }
+
+@media print {
+  body { background: #fff; color: #000; padding: 0; margin: 0; }
+  .controls { display: none; }
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(54mm, 1fr));
+    gap: 0;
+    padding: 0;
+  }
+  .badge {
+    width: 54mm;
+    height: 86mm;
+    aspect-ratio: auto;
+    box-shadow: none;
+    border: 0.5pt solid #ddd;
+    border-radius: 3mm;
+    margin: 0;
+  }
+  .badge-top { background: #000 !important; }
+  .badge-mid { background: #fff !important; }
+  .badge-bot { background: #000 !important; }
+  .badge-fol { color: #fff !important; }
+  .badge-year-line { background: rgba(255,255,255,0.3) !important; }
+  .badge-year { color: #ccc !important; }
+  .badge-star { color: #D4A72C !important; }
+  .badge-role-pill { background: #111 !important; color: #fff !important; }
+  .badge-name { color: #000 !important; }
+  .badge-full { color: #888 !important; }
+  .badge-id { color: #999 !important; }
+  .badge-bot-line { background: rgba(255,255,255,0.2) !important; }
+  .badge-theme { color: #fff !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 </style>
 </head>
@@ -102,14 +153,14 @@ button:hover { background: #F0D980; }
     <input type="text" id="search" placeholder="Search name..." onkeyup="update()">
   </div>
   <div style="margin-top: 10px;">
-    <button onclick="selectAll()">Select All</button>
-    <button onclick="deselectAll()">Deselect All</button>
+    <button onclick="selectAll()">✓ Select All</button>
+    <button onclick="deselectAll()">✗ Deselect All</button>
     <button onclick="window.print()">🖨️ Print to Thermal Printer</button>
   </div>
-  <div id="count" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
+  <div id="count"></div>
 </div>
 
-<div id="badges"></div>
+<div class="grid" id="grid"></div>
 
 <script>
 const PARTICIPANTS = [
@@ -279,42 +330,77 @@ const PARTICIPANTS = [
 
 let selected = new Set();
 
+function buildBadge(p, idx) {
+  const pid = 'P' + String(idx + 1).padStart(3, '0');
+  return `
+    <div class="badge">
+      <div class="badge-top">
+        <div class="badge-fol">F O L</div>
+        <div class="badge-year-row">
+          <div class="badge-year-line"></div>
+          <div class="badge-year">2 0 2 6</div>
+          <div class="badge-year-line"></div>
+        </div>
+        <div class="badge-star">✦</div>
+      </div>
+      <div class="badge-mid">
+        <div class="badge-role-pill">${p.role}</div>
+        <div class="badge-name">${p.name}</div>
+        <div class="badge-full">${p.full}</div>
+        <div class="badge-divider-line"><span class="badge-divider-dot">✦</span></div>
+        <div class="badge-qr" id="qr-${pid}"></div>
+        <div class="badge-id">${pid} · ${p.outlet}</div>
+      </div>
+      <div class="badge-bot">
+        <div class="badge-bot-line"></div>
+        <div class="badge-theme">— BREAK TODAY · BUILD TOMORROW —</div>
+        <div class="badge-bot-line"></div>
+      </div>
+    </div>
+  `;
+}
+
+function generateQR(pid, url) {
+  const el = document.getElementById('qr-' + pid);
+  if (!el || el.children.length > 0) return;
+  try {
+    new QRCode(el, {
+      text: url,
+      width: 90,
+      height: 90,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {}
+}
+
 function update() {
   const outlet = document.getElementById('outlet').value;
   const search = document.getElementById('search').value.toLowerCase();
 
-  let filtered = PARTICIPANTS.filter((p, i) => {
-    let match = true;
-    if (outlet && p.outlet !== outlet) match = false;
-    if (search && !p.name.toLowerCase().includes(search) && !p.full.toLowerCase().includes(search)) match = false;
-    return match;
-  });
+  let list = PARTICIPANTS;
+  if (outlet) list = list.filter(p => p.outlet === outlet);
+  if (search) list = list.filter(p => p.name.toLowerCase().includes(search) || p.full.toLowerCase().includes(search));
 
   let html = '';
-  filtered.forEach((p, i) => {
+  list.forEach(p => {
     const idx = PARTICIPANTS.indexOf(p);
-    const pid = 'P' + String(idx + 1).padStart(3, '0');
-    const checked = selected.has(idx);
-
-    html += `
-      <label style="display: flex; align-items: center; gap: 10px; padding: 10px; margin: 5px 0; background: #f9f9f9; border-radius: 4px; cursor: pointer;">
-        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggle(${idx})">
-        <span>${p.name} - ${p.full} (${p.role})</span>
-      </label>
-    `;
+    html += buildBadge(p, idx);
   });
 
-  document.getElementById('badges').innerHTML = html;
-  updateCount();
-}
+  const grid = document.getElementById('grid');
+  grid.innerHTML = html;
 
-function toggle(idx) {
-  if (selected.has(idx)) {
-    selected.delete(idx);
-  } else {
-    selected.add(idx);
-  }
-  update();
+  // Generate QR codes
+  list.forEach(p => {
+    const idx = PARTICIPANTS.indexOf(p);
+    const pid = 'P' + String(idx + 1).padStart(3, '0');
+    const url = 'https://jiaying924-maker.github.io/fol2026-project/?id=' + pid;
+    generateQR(pid, url);
+  });
+
+  updateCount();
 }
 
 function selectAll() {
@@ -326,45 +412,15 @@ function selectAll() {
     if (search && !p.name.toLowerCase().includes(search) && !p.full.toLowerCase().includes(search)) match = false;
     if (match) selected.add(i);
   });
-  update();
 }
 
 function deselectAll() {
   selected.clear();
-  update();
 }
 
 function updateCount() {
-  document.getElementById('count').textContent = `${selected.size} badge(s) selected for printing`;
+  document.getElementById('count').textContent = `Showing ${PARTICIPANTS.length} badges`;
 }
-
-// Modify page on print
-window.addEventListener('beforeprint', () => {
-  const container = document.getElementById('badges');
-  let html = '';
-  Array.from(selected).sort((a, b) => a - b).forEach(idx => {
-    const p = PARTICIPANTS[idx];
-    const pid = 'P' + String(idx + 1).padStart(3, '0');
-    html += `
-      <div class="badge">
-        <div class="badge-top">
-          <div class="fol">F O L</div>
-          <div class="year">— 2 0 2 6 —</div>
-          <div class="star">✦</div>
-        </div>
-        <div class="badge-mid">
-          <div class="role">${p.role}</div>
-          <div class="name">${p.name}</div>
-          <div class="full">${p.full}</div>
-          <div class="pid">${pid}</div>
-          <div class="outlet">${p.outlet}</div>
-        </div>
-        <div class="badge-bot">— BREAK TODAY · BUILD TOMORROW —</div>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-});
 
 update();
 </script>
