@@ -341,75 +341,58 @@ function generatePDF() {
   btn.disabled = true;
   btn.textContent = '⏳ Generating...';
 
-  const element = document.createElement('div');
-  document.body.appendChild(element);
-
   const badges = Array.from(selectedIndices).sort((a, b) => a - b);
-  let html = '';
+  const element = document.createElement('div');
 
+  let html = '';
   badges.forEach(idx => {
     const p = PARTICIPANTS[idx];
     const pid = 'P' + String(idx + 1).padStart(3, '0');
-    const url = 'https://jiaying924-maker.github.io/fol2026-project/?id=' + pid;
 
     html += `
       <div style="
         width: 50mm; height: 80mm;
-        margin: 0; padding: 0;
+        margin: 0; padding: 8px;
         page-break-after: always;
         display: flex; flex-direction: column;
         background: #000; color: #fff;
         font-family: Arial, sans-serif;
+        box-sizing: border-box;
+        justify-content: space-between;
       ">
-        <div style="flex: 0 0 15%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-          <div style="font-size: 20px; font-weight: 700;">FOL</div>
-          <div style="font-size: 8px;">2026</div>
+        <div style="text-align: center;">
+          <div style="font-size: 18px; font-weight: bold; letter-spacing: 2px;">FOL</div>
+          <div style="font-size: 7px; margin-top: 1px;">2026</div>
         </div>
-        <div style="flex: 1; padding: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: #000;">
-          <div style="font-size: 8px; color: #D4A72C; margin-bottom: 3px;">${p.role}</div>
-          <div style="font-size: 12px; font-weight: 600; margin-bottom: 2px;">${p.name}</div>
-          <div style="font-size: 9px; color: #bbb; margin-bottom: 4px;">${p.full}</div>
-          <canvas id="qr-${pid}" style="width: 40px; height: 40px; margin: 3px 0;"></canvas>
-          <div style="font-size: 7px; color: #999; margin-top: 3px;">${pid} · ${p.outlet}</div>
+
+        <div style="text-align: center;">
+          <div style="font-size: 8px; color: #D4A72C; margin-bottom: 2px; font-weight: bold;">${p.role}</div>
+          <div style="font-size: 11px; font-weight: 600; margin-bottom: 1px; line-height: 1.2;">${p.name}</div>
+          <div style="font-size: 8px; color: #aaa; margin-bottom: 3px; line-height: 1.2;">${p.full}</div>
+          <div style="width: 30px; height: 30px; margin: 2px auto; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #000;">
+            ${pid}
+          </div>
+          <div style="font-size: 7px; color: #888; margin-top: 2px;">${p.outlet}</div>
         </div>
-        <div style="flex: 0 0 12%; background: #000; display: flex; align-items: center; justify-content: center;">
-          <div style="font-size: 6px; color: #555;">BREAK TODAY · BUILD TOMORROW</div>
+
+        <div style="text-align: center;">
+          <div style="font-size: 5px; color: #666; letter-spacing: 0.5px;">BREAK TODAY<br>BUILD TOMORROW</div>
         </div>
       </div>
     `;
   });
 
   element.innerHTML = html;
-  element.style.display = 'none';
 
-  // Generate QR codes on canvas
-  let qrCount = 0;
-  badges.forEach(idx => {
-    const pid = 'P' + String(idx + 1).padStart(3, '0');
-    const url = 'https://jiaying924-maker.github.io/fol2026-project/?id=' + pid;
-    const canvas = element.querySelector(`#qr-${pid}`);
-    if (canvas) {
-      QRCode.toCanvas(canvas, url, { width: 40, margin: 0, color: { dark: '#000', light: '#fff' } }, (err) => {
-        if (!err) qrCount++;
-        if (qrCount === badges.length) {
-          setTimeout(() => generatePDFFromElement(element, btn), 200);
-        }
-      });
-    }
-  });
-}
-
-function generatePDFFromElement(element, btn) {
   const opt = {
     margin: 0,
     filename: 'FOL2026-Badges.pdf',
     image: { type: 'png', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2 },
     jsPDF: { format: [50, 80], unit: 'mm', orientation: 'portrait' }
   };
 
   html2pdf().set(opt).from(element).save().finally(() => {
-    element.remove();
     btn.disabled = false;
     btn.textContent = '📥 Generate PDF (50mm×80mm)';
   });
