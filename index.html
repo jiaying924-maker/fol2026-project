@@ -525,35 +525,13 @@ function render() {
       <div class="p-full">${p.full}</div>
       <div class="tags">
         <span class="tag tag-outlet">📍 ${p.outlet}</span>
-        ${present
-          ? `<span class="tag tag-present">✅ Checked In · ${fmtTime(d.attendance.time)}</span>`
-          : `<span class="tag tag-absent">⏳ Not Yet Checked In</span>`}
       </div>
     </div>
 
     <!-- Sections -->
     <div class="sections">
 
-      <!-- Attendance -->
-      <div class="card">
-        <div class="card-head">
-          <span class="card-icon">✅</span>
-          <div>
-            <div class="card-title">Attendance</div>
-            <div class="card-sub">FOL 2026 · 3–4 August, Penang</div>
-          </div>
-        </div>
-        <div class="card-body attend-body">
-          ${present
-            ? `<div class="attend-status-txt ok">✅ Present!</div>
-               <div class="attend-time-txt">Checked in: ${fmtTime(d.attendance.time)}${d.attendance.by ? ' · by ' + d.attendance.by : ''}</div>
-               ${IS_ADMIN ? `<br><button class="btn btn-red btn-sm" onclick="unmarkAttendance()">↩ Undo Check-In</button>` : ''}`
-            : `<button class="btn btn-green" onclick="markAttendance()">✅ Mark Attendance · 签到</button>
-               <div class="attend-time-txt">Tap to check in for FOL 2026</div>`}
-        </div>
-      </div>
-
-      <!-- 3. Proactivity Marks -->
+      <!-- Proactivity Marks -->
       <div class="card">
         <div class="card-head">
           <span class="card-icon">⭐</span>
