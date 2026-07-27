@@ -348,51 +348,80 @@ function generatePDF() {
   badges.forEach(idx => {
     const p = PARTICIPANTS[idx];
     const pid = 'P' + String(idx + 1).padStart(3, '0');
+    const url = 'https://jiaying924-maker.github.io/fol2026-project/?id=' + pid;
 
     html += `
-      <div style="
+      <div class="pdf-badge" data-pid="${pid}" data-url="${url}" style="
         width: 50mm; height: 80mm;
-        margin: 0; padding: 8px;
+        margin: 0; padding: 0;
         page-break-after: always;
         display: flex; flex-direction: column;
-        background: #000; color: #fff;
-        font-family: Arial, sans-serif;
+        background: #fff; color: #000;
+        font-family: 'Cormorant Garamond', serif;
         box-sizing: border-box;
-        justify-content: space-between;
       ">
-        <div style="text-align: center;">
-          <div style="font-size: 18px; font-weight: bold; letter-spacing: 2px;">FOL</div>
-          <div style="font-size: 7px; margin-top: 1px;">2026</div>
+        <!-- Top: FOL 2026 -->
+        <div style="flex: 0 0 20%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #333;">
+          <div style="font-size: 28px; font-weight: 700; color: #fff; letter-spacing: 3px;">F O L</div>
+          <div style="font-size: 10px; color: #D4A72C; margin-top: 2px; letter-spacing: 1px;">— 2 0 2 6 —</div>
+          <div style="font-size: 16px; color: #D4A72C; margin-top: 1px;">✦</div>
         </div>
 
-        <div style="text-align: center;">
-          <div style="font-size: 8px; color: #D4A72C; margin-bottom: 2px; font-weight: bold;">${p.role}</div>
-          <div style="font-size: 11px; font-weight: 600; margin-bottom: 1px; line-height: 1.2;">${p.name}</div>
-          <div style="font-size: 8px; color: #aaa; margin-bottom: 3px; line-height: 1.2;">${p.full}</div>
-          <div style="width: 30px; height: 30px; margin: 2px auto; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #000;">
-            ${pid}
+        <!-- Middle: Content -->
+        <div style="flex: 1; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: #fff;">
+          <div style="font-size: 9px; background: #000; color: #fff; padding: 3px 8px; font-weight: 600; margin-bottom: 4px; border-radius: 3px;">${p.role}</div>
+          <div style="font-size: 14px; font-weight: 600; color: #000; margin-bottom: 1px; line-height: 1.1;">${p.name}</div>
+          <div style="font-size: 9px; color: #777; margin-bottom: 4px; line-height: 1.1;">${p.full}</div>
+          <div style="width: 50px; height: 50px; margin: 3px 0; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+            <svg class="qr-${pid}" width="48" height="48"></svg>
           </div>
-          <div style="font-size: 7px; color: #888; margin-top: 2px;">${p.outlet}</div>
+          <div style="font-size: 8px; color: #999; margin-top: 3px;">${pid} · ${p.outlet}</div>
         </div>
 
-        <div style="text-align: center;">
-          <div style="font-size: 5px; color: #666; letter-spacing: 0.5px;">BREAK TODAY<br>BUILD TOMORROW</div>
+        <!-- Bottom: Tagline -->
+        <div style="flex: 0 0 16%; background: #000; display: flex; align-items: center; justify-content: center; border-top: 1px solid #333;">
+          <div style="font-size: 8px; color: #888; letter-spacing: 1px; text-align: center;">— BREAK TODAY · BUILD TOMORROW —</div>
         </div>
       </div>
     `;
   });
 
   element.innerHTML = html;
+  element.style.display = 'none';
+  document.body.appendChild(element);
 
+  // Generate QR codes
+  let qrCount = 0;
+  badges.forEach(idx => {
+    const pid = 'P' + String(idx + 1).padStart(3, '0');
+    const badge = element.querySelector(`[data-pid="${pid}"]`);
+    if (badge) {
+      const url = badge.getAttribute('data-url');
+      const svg = badge.querySelector(`.qr-${pid}`);
+      QRCode.toDataURL(url, { width: 48, margin: 0, color: { dark: '#000', light: '#fff' } }, (err, dataUrl) => {
+        if (!err && svg) {
+          svg.outerHTML = `<img src="${dataUrl}" width="48" height="48" style="display:block;">`;
+        }
+        qrCount++;
+        if (qrCount === badges.length) {
+          setTimeout(() => generatePDFFromElement(element, btn), 300);
+        }
+      });
+    }
+  });
+}
+
+function generatePDFFromElement(element, btn) {
   const opt = {
     margin: 0,
     filename: 'FOL2026-Badges.pdf',
-    image: { type: 'png', quality: 0.95 },
-    html2canvas: { scale: 2 },
+    image: { type: 'png', quality: 0.98 },
+    html2canvas: { scale: 3, useCORS: true, backgroundColor: '#fff' },
     jsPDF: { format: [50, 80], unit: 'mm', orientation: 'portrait' }
   };
 
   html2pdf().set(opt).from(element).save().finally(() => {
+    element.remove();
     btn.disabled = false;
     btn.textContent = '📥 Generate PDF (50mm×80mm)';
   });
