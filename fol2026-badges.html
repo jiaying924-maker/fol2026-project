@@ -106,35 +106,36 @@ select:focus, input:focus { border-color: #D4A72C; }
   letter-spacing: 1.5px;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   border-radius: 0;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 .badge-name {
   font-size: 22px;
-  font-weight: 700;
-  color: #000;
+  font-weight: 600;
+  color: #000000;
   text-align: center;
   letter-spacing: 0.3px;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 .badge-full {
   font-size: 10px;
-  color: #888;
+  color: #000000;
   letter-spacing: 1px;
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
-  margin-top: 1px;
+  font-weight: 500;
+  margin-top: 2px;
 }
 .badge-divider-line {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin: 4px 0;
+  gap: 5px;
+  margin: 5px 0;
 }
-.badge-divider-line::before, .badge-divider-line::after { content:''; flex:1; height:1px; background:#ddd; }
-.badge-divider-dot { color: #ccc; font-size: 5px; }
+.badge-divider-line::before, .badge-divider-line::after { content:''; flex:1; height:1px; background:#000000; }
+.badge-divider-dot { color: #000000; font-size: 5px; }
 
 /* QR code */
 .badge-qr {
@@ -143,14 +144,16 @@ select:focus, input:focus { border-color: #D4A72C; }
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 3px 0;
 }
 .badge-qr canvas, .badge-qr img { width: 90px !important; height: 90px !important; }
 .badge-id {
-  font-size: 7px;
-  color: #999;
+  font-size: 8px;
+  color: #000000;
   letter-spacing: 2px;
   font-family: 'Inter', monospace;
-  margin-top: 1px;
+  font-weight: 500;
+  margin-top: 2px;
 }
 
 /* Bottom black strip */
