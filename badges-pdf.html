@@ -28,34 +28,34 @@ body { font-family: 'Inter', sans-serif; background: #fff; }
 
 .badge-top {
   background: #000;
-  height: 20%;
+  flex: 0 0 18%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1mm 0;
+  padding: 0.5mm 0;
 }
 
 .badge-fol {
-  font-size: 18pt;
+  font-size: 16pt;
   font-weight: 700;
-  letter-spacing: 8px;
+  letter-spacing: 6px;
   color: #fff;
   line-height: 1;
 }
 
 .badge-year {
-  font-size: 6pt;
-  letter-spacing: 3px;
+  font-size: 5pt;
+  letter-spacing: 2px;
   color: #ccc;
   font-family: 'Inter', sans-serif;
-  margin-top: 1mm;
+  margin-top: 0.5mm;
 }
 
 .badge-star {
   color: #D4A72C;
-  font-size: 5pt;
-  margin-top: 1mm;
+  font-size: 4pt;
+  margin-top: 0.5mm;
 }
 
 .badge-middle {
@@ -64,42 +64,46 @@ body { font-family: 'Inter', sans-serif; background: #fff; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4mm 5mm;
+  padding: 3mm 4mm;
   background: #fff;
-  gap: 1.5mm;
+  gap: 1mm;
+  min-height: 0;
 }
 
 .badge-role {
   font-family: 'Inter', sans-serif;
-  font-size: 9pt;
+  font-size: 8pt;
   font-weight: 600;
   color: #000;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .badge-name {
-  font-size: 14pt;
+  font-size: 12pt;
   font-weight: 600;
   color: #000;
   text-align: center;
-  line-height: 1.1;
+  line-height: 1.05;
+  flex-shrink: 0;
 }
 
 .badge-full-name {
-  font-size: 7pt;
+  font-size: 6pt;
   color: #000;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .badge-qr {
-  width: 4mm;
-  height: 4mm;
-  margin: 0.5mm auto;
+  width: 3.5mm;
+  height: 3.5mm;
+  margin: 0.3mm auto;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -108,38 +112,39 @@ body { font-family: 'Inter', sans-serif; background: #fff; }
 }
 
 .badge-qr canvas {
-  width: 4mm !important;
-  height: 4mm !important;
+  width: 3.5mm !important;
+  height: 3.5mm !important;
   display: block;
   margin: 0 !important;
 }
 
 .badge-id {
-  font-size: 6pt;
+  font-size: 5pt;
   color: #000;
   font-family: 'Inter', monospace;
   font-weight: 500;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .badge-bottom {
   background: #000;
-  height: 18%;
+  flex: 0 0 16%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2mm 4mm;
+  padding: 1.5mm 3mm;
 }
 
 .badge-tagline {
-  font-size: 7pt;
+  font-size: 6pt;
   color: #fff;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  line-height: 1.3;
+  line-height: 1.2;
   text-align: center;
 }
 
