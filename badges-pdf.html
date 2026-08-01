@@ -3,166 +3,154 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FOL 2026 · Print Badges</title>
+<title>FOL 2026 Badges PDF</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #1a1a1a; color: #e0e0e0; font-family: 'Inter', system-ui, sans-serif; padding: 20px; }
-.controls { background: #111; border: 1px solid #333; padding: 18px 24px; border-radius: 8px; margin-bottom: 20px; }
-.controls h2 { font-size: 16px; color: #D4A72C; margin-bottom: 12px; }
-select, input { background: #222; border: 1px solid #444; color: #e0e0e0; border-radius: 7px; padding: 7px 12px; font-size: 13px; font-family: inherit; margin: 5px; }
-select:focus, input:focus { border-color: #D4A72C; }
-button { background: #D4A72C; color: #000; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; margin: 5px; }
-button:hover { background: #F0D980; }
-#count { margin-top: 10px; font-size: 12px; color: #777; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; }
+body { font-family: 'Inter', sans-serif; background: #fff; }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  padding: 20px 0;
-}
-
-.badge {
-  width: 220px;
-  aspect-ratio: 220 / 346;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07);
+.badge-container {
+  width: 50mm;
+  height: 80mm;
+  page-break-after: always;
+  page-break-inside: avoid;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   background: #fff;
   font-family: 'Cormorant Garamond', serif;
-  page-break-inside: avoid;
+  overflow: hidden;
+  break-after: always;
 }
 
 .badge-top {
   background: #000;
-  flex: 0 0 20%;
+  height: 20%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 0 3px;
+  padding: 1mm 0;
 }
-.badge-fol { font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #fff; line-height: 1; }
-.badge-year-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
-.badge-year-line { flex: 1; height: 1px; background: rgba(255,255,255,0.3); width: 18px; }
-.badge-year { font-size: 8px; letter-spacing: 5px; color: #ccc; font-family: 'Inter', sans-serif; font-weight: 400; }
-.badge-star { color: #D4A72C; font-size: 6px; margin-top: 3px; }
 
-.badge-mid {
+.badge-fol {
+  font-size: 18pt;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: #fff;
+  line-height: 1;
+}
+
+.badge-year {
+  font-size: 6pt;
+  letter-spacing: 3px;
+  color: #ccc;
+  font-family: 'Inter', sans-serif;
+  margin-top: 1mm;
+}
+
+.badge-star {
+  color: #D4A72C;
+  font-size: 5pt;
+  margin-top: 1mm;
+}
+
+.badge-middle {
   flex: 1;
-  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 12px 10px;
-  gap: 5px;
+  padding: 4mm 5mm;
+  background: #fff;
+  gap: 1.5mm;
 }
-.badge-role-pill {
-  background: none;
-  color: #000000;
-  font-size: 14px;
-  letter-spacing: 1.5px;
-  padding: 0;
+
+.badge-role {
+  font-family: 'Inter', sans-serif;
+  font-size: 9pt;
+  font-weight: 600;
+  color: #000;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.badge-name {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #000;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.badge-full-name {
+  font-size: 7pt;
+  color: #000;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+.badge-qr {
+  width: 4mm;
+  height: 4mm;
+  margin: 0.5mm auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.badge-qr canvas {
+  width: 4mm !important;
+  height: 4mm !important;
+  display: block;
+  margin: 0 !important;
+}
+
+.badge-id {
+  font-size: 6pt;
+  color: #000;
+  font-family: 'Inter', monospace;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.badge-bottom {
+  background: #000;
+  height: 18%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2mm 4mm;
+}
+
+.badge-tagline {
+  font-size: 7pt;
+  color: #fff;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  border-radius: 0;
-  margin-bottom: 3px;
+  line-height: 1.3;
+  text-align: center;
 }
-.badge-name { font-size: 22px; font-weight: 600; color: #000000; text-align: center; letter-spacing: 0.3px; line-height: 1.2; }
-.badge-full { font-size: 10px; color: #000000; letter-spacing: 1px; font-family: 'Inter', sans-serif; text-transform: uppercase; font-weight: 500; margin-top: 2px; }
-.badge-divider-line { display: flex; align-items: center; gap: 5px; margin: 5px 0; }
-.badge-divider-line::before, .badge-divider-line::after { content:''; flex:1; height:1px; background:#000000; }
-.badge-divider-dot { color: #000000; font-size: 5px; }
-.badge-qr { width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; margin: 3px 0; }
-.badge-qr canvas, .badge-qr img { width: 90px !important; height: 90px !important; }
-.badge-id { font-size: 8px; color: #000000; letter-spacing: 2px; font-family: 'Inter', monospace; font-weight: 500; margin-top: 2px; }
-
-.badge-bot {
-  background: #000;
-  flex: 0 0 18%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 8px;
-  gap: 0;
-}
-.badge-bot-line { flex: 1; height: 1px; background: rgba(255,255,255,0.2); max-width: 20px; }
-.badge-theme { font-size: 9px; letter-spacing: 2px; color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; text-transform: uppercase; line-height: 1.4; text-align: center; width: 100%; }
 
 @media print {
-  body { background: #fff; color: #000; padding: 0; margin: 0; }
-  .controls { display: none; }
-  .grid {
-    grid-template-columns: repeat(auto-fit, minmax(54mm, 1fr));
-    gap: 0;
-    padding: 0;
-  }
-  .badge {
-    width: 54mm;
-    height: 86mm;
-    aspect-ratio: auto;
-    box-shadow: none;
-    border: 0.5pt solid #ddd;
-    border-radius: 3mm;
-    margin: 0;
-  }
-  .badge-top { background: #000 !important; }
-  .badge-mid { background: #fff !important; }
-  .badge-bot { background: #000 !important; }
-  .badge-fol { color: #fff !important; }
-  .badge-year-line { background: rgba(255,255,255,0.3) !important; }
-  .badge-year { color: #ccc !important; }
-  .badge-star { color: #D4A72C !important; }
-  .badge-role-pill { background: #111 !important; color: #fff !important; }
-  .badge-name { color: #000 !important; }
-  .badge-full { color: #888 !important; }
-  .badge-id { color: #999 !important; }
-  .badge-bot-line { background: rgba(255,255,255,0.2) !important; }
-  .badge-theme { color: #fff !important; }
+  html, body { margin: 0; padding: 0; }
+  .badge-container { margin: 0; padding: 0; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 </style>
 </head>
-<body>
-
-<div class="controls">
-  <h2>🎫 FOL 2026 · Print Badges</h2>
-  <div>
-    <label>Filter by outlet:</label>
-    <select id="outlet" onchange="update()">
-      <option value="">All</option>
-      <option value="HQ">HQ</option>
-      <option value="BM">BM</option>
-      <option value="GL">GL</option>
-      <option value="GY">GY</option>
-      <option value="RU">RU</option>
-      <option value="MA">MA</option>
-      <option value="SU">SU</option>
-      <option value="JB">JB</option>
-      <option value="CL">CL</option>
-      <option value="PC">PC</option>
-      <option value="SS2">SS2</option>
-      <option value="KL">KL</option>
-      <option value="PG">PG</option>
-    </select>
-    <input type="text" id="search" placeholder="Search name..." onkeyup="update()">
-  </div>
-  <div style="margin-top: 10px;">
-    <button onclick="selectAll()">✓ Select All</button>
-    <button onclick="deselectAll()">✗ Deselect All</button>
-    <button onclick="window.print()">🖨️ Print to Thermal Printer</button>
-  </div>
-  <div id="count"></div>
-</div>
-
-<div class="grid" id="grid"></div>
+<body id="badges"></body>
 
 <script>
 const PARTICIPANTS = [
@@ -331,101 +319,54 @@ const PARTICIPANTS = [
   { name:'STEVE', full:'NEOH SZE TSIN', role:'CFO', outlet:'HQ' }
 ];
 
-let selected = new Set();
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('badges');
 
-function buildBadge(p, idx) {
-  const pid = 'P' + String(idx + 1).padStart(3, '0');
-  return `
-    <div class="badge">
-      <div class="badge-top">
-        <div class="badge-fol">F O L</div>
-        <div class="badge-year-row">
-          <div class="badge-year-line"></div>
-          <div class="badge-year">2 0 2 6</div>
-          <div class="badge-year-line"></div>
+  PARTICIPANTS.forEach((p, idx) => {
+    const badgeId = `badge-${idx}`;
+    const qrId = `qr-${idx}`;
+
+    const html = `
+      <div class="badge-container">
+        <div class="badge-top">
+          <div class="badge-fol">F O L</div>
+          <div class="badge-year">2 0 2 6 ★</div>
         </div>
-        <div class="badge-star">✦</div>
+        <div class="badge-middle">
+          <div class="badge-role">${p.role}</div>
+          <div class="badge-name">${p.name}</div>
+          <div class="badge-full-name">${p.full}</div>
+          <div class="badge-qr" id="${qrId}"></div>
+          <div class="badge-id">P${String(idx + 1).padStart(3, '0')} · ${p.outlet}</div>
+        </div>
+        <div class="badge-bottom">
+          <div class="badge-tagline">BREAK TODAY<br>BUILD TOMORROW</div>
+        </div>
       </div>
-      <div class="badge-mid">
-        <div class="badge-role-pill">${p.role}</div>
-        <div class="badge-name">${p.name}</div>
-        <div class="badge-full">${p.full}</div>
-        <div class="badge-divider-line"><span class="badge-divider-dot">✦</span></div>
-        <div class="badge-qr" id="qr-${pid}"></div>
-        <div class="badge-id">${pid} · ${p.outlet}</div>
-      </div>
-      <div class="badge-bot">
-        <div class="badge-bot-line"></div>
-        <div class="badge-theme">— BREAK TODAY ·<br>BUILD TOMORROW —</div>
-        <div class="badge-bot-line"></div>
-      </div>
-    </div>
-  `;
-}
+    `;
 
-function generateQR(pid, url) {
-  const el = document.getElementById('qr-' + pid);
-  if (!el || el.children.length > 0) return;
-  try {
-    new QRCode(el, {
-      text: url,
-      width: 90,
-      height: 90,
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch(e) {}
-}
-
-function update() {
-  const outlet = document.getElementById('outlet').value;
-  const search = document.getElementById('search').value.toLowerCase();
-
-  let list = PARTICIPANTS;
-  if (outlet) list = list.filter(p => p.outlet === outlet);
-  if (search) list = list.filter(p => p.name.toLowerCase().includes(search) || p.full.toLowerCase().includes(search));
-
-  let html = '';
-  list.forEach(p => {
-    const idx = PARTICIPANTS.indexOf(p);
-    html += buildBadge(p, idx);
+    container.insertAdjacentHTML('beforeend', html);
   });
-
-  const grid = document.getElementById('grid');
-  grid.innerHTML = html;
 
   // Generate QR codes
-  list.forEach(p => {
-    const idx = PARTICIPANTS.indexOf(p);
-    const pid = 'P' + String(idx + 1).padStart(3, '0');
-    const url = 'https://jiaying924-maker.github.io/fol2026-project/?id=' + pid;
-    generateQR(pid, url);
-  });
-
-  updateCount();
-}
-
-function selectAll() {
-  const outlet = document.getElementById('outlet').value;
-  const search = document.getElementById('search').value.toLowerCase();
-  PARTICIPANTS.forEach((p, i) => {
-    let match = true;
-    if (outlet && p.outlet !== outlet) match = false;
-    if (search && !p.name.toLowerCase().includes(search) && !p.full.toLowerCase().includes(search)) match = false;
-    if (match) selected.add(i);
-  });
-}
-
-function deselectAll() {
-  selected.clear();
-}
-
-function updateCount() {
-  document.getElementById('count').textContent = `Showing ${PARTICIPANTS.length} badges`;
-}
-
-update();
+  setTimeout(() => {
+    PARTICIPANTS.forEach((p, idx) => {
+      const qrElement = document.getElementById(`qr-${idx}`);
+      if (qrElement) {
+        const url = `https://jiaying924-maker.github.io/fol2026-project?id=P${String(idx + 1).padStart(3, '0')}`;
+        try {
+          new QRCode(qrElement, {
+            text: url,
+            width: 40,
+            height: 40,
+            colorDark: "#000",
+            colorLight: "#fff"
+          });
+        } catch (e) {}
+      }
+    });
+  }, 200);
+});
 </script>
 </body>
 </html>
