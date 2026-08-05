@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete Recent Messages</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: monospace; background: #0a0e27; color: #f00; padding: 20px; }
+.container { max-width: 1000px; margin: 0 auto; }
+h1 { color: #f00; margin-bottom: 20px; }
+.warning { background: rgba(255,0,0,0.1); border: 2px solid #f00; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+input { background: #111; color: #f00; border: 1px solid #f00; padding: 8px; border-radius: 4px; width: 200px; margin-right: 10px; }
+button { background: #f00; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
+button:hover { background: #cc0000; }
+#output { background: #111; color: #0f0; padding: 20px; border-radius: 4px; margin-top: 20px; white-space: pre-wrap; font-size: 12px; max-height: 500px; overflow-y: auto; }
+.success { color: #0f0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🗑️ DELETE RECENTLY IMPORTED MESSAGES</h1>
+
+  <div class="warning">
+    <strong>This will delete messages from the last 3 hours across ALL participants.</strong><br>
+    Only messages imported recently will be deleted. Old messages will be kept.
+  </div>
+
+  <div>
+    <label>Delete messages from the last:</label><br><br>
+    <input type="number" id="hours" value="3" min="1" max="24"> hours
+    <button onclick="deleteRecentMessages()" style="background: #f00; margin-top: 10px;">🗑️ DELETE RECENT MESSAGES</button>
+  </div>
+
+  <div id="output"></div>
+</div>
+
+<script>
+const FB_CONFIG = {
+  apiKey:            "AIzaSyBXkCvP9XxS1n_DP_0dDKlk2eFfB6-hVHo",
+  authDomain:        "fol2026.firebaseapp.com",
+  projectId:         "fol2026",
+  storageBucket:     "fol2026.firebasestorage.app",
+  messagingSenderId: "766849872975",
+  appId:             "1:766849872975:web:25e03f8e1c3b2f1a3b7c9e"
+};
+
+firebase.initializeApp(FB_CONFIG);
+const db = firebase.firestore();
+
+const PARTICIPANTS = [
+  { name:'DR. FONG', outlet:'HQ' }, { name:'DR. JAYE', outlet:'HQ' }, { name:'DR. JOVYN', outlet:'HQ' },
+  { name:'DR NICOLE', outlet:'HQ' }, { name:'DR XUAN', outlet:'HQ' }, { name:'DR JEM', outlet:'HQ' },
+  { name:'JOANNE', outlet:'HQ' }, { name:'GING HUI', outlet:'HQ' }, { name:'XIN NI', outlet:'HQ' },
+  { name:'IRENE', outlet:'HQ' }, { name:'YU TING', outlet:'HQ' }, { name:'ZHI TIAN', outlet:'HQ' },
+  { name:'GRACEYY', outlet:'HQ' }, { name:'YI LING', outlet:'HQ' }, { name:'EVELYN', outlet:'HQ' },
+  { name:'SU JIN', outlet:'HQ' }, { name:'YU CHUEN', outlet:'HQ' }, { name:'JIA XUAN', outlet:'HQ' },
+  { name:'CHING THING', outlet:'HQ' }, { name:'KHAI XUAN', outlet:'HQ' }, { name:'CELINE', outlet:'HQ' },
+  { name:'CAROL', outlet:'HQ' }, { name:'LIANG', outlet:'HQ' }, { name:'XIN RU', outlet:'HQ' },
+  { name:'CATHERINE', outlet:'HQ' }, { name:'JINNY', outlet:'HQ' }, { name:'SHUE HUI', outlet:'HQ' },
+  { name:'TK', outlet:'HQ' }, { name:'ADELINE', outlet:'HQ' }, { name:'HOOI HUNG', outlet:'HQ' },
+  { name:'叶老师', outlet:'HQ' }, { name:'DR.JOYCE', outlet:'SU' }, { name:'NICOLE', outlet:'PG' },
+  { name:'PHEI CHIA', outlet:'PG' }, { name:'WENNIE', outlet:'BM' }, { name:'ESTHER', outlet:'BM' },
+  { name:'HONEY', outlet:'BM' }, { name:'SHERLYN', outlet:'BM' }, { name:'WAN YING', outlet:'BM' },
+  { name:'ENNA', outlet:'BM' }, { name:'TIFFANY', outlet:'BM' }, { name:'YEN SI', outlet:'BM' },
+  { name:'AI MEI', outlet:'BM' }, { name:'YE YING', outlet:'BM' }, { name:'YVONNE', outlet:'BM' },
+  { name:'ELAINE', outlet:'BM' }, { name:'JANICE', outlet:'BM' }, { name:'DR HONG', outlet:'BM' },
+  { name:'DR LEENA', outlet:'BM' }, { name:'DR JOLING', outlet:'BM' }, { name:'DR EE LING', outlet:'BM' },
+  { name:'MINDY', outlet:'GL' }, { name:'SYVIN', outlet:'GL' }, { name:'HUI XIAN', outlet:'GL' },
+  { name:'STELLA', outlet:'GL' }, { name:'KATHERINE', outlet:'GL' }, { name:'YUNNY', outlet:'GL' },
+  { name:'KARENE', outlet:'GL' }, { name:'REGINA', outlet:'GL' }, { name:'XIAO WEI', outlet:'GL' },
+  { name:'YEN HOON', outlet:'GL' }, { name:'CHLOE', outlet:'GL' }, { name:'TIFFANY', outlet:'GL' },
+  { name:'ESTHER', outlet:'GL' }, { name:'DR CHERYL', outlet:'GL' }, { name:'DR MICHELLE', outlet:'GL' },
+  { name:'DR TEH', outlet:'GL' }, { name:'DR CHAN', outlet:'SU' }, { name:'DR YI WEN', outlet:'GL' },
+  { name:'CLARISE', outlet:'GY' }, { name:'MARGARET', outlet:'GY' }, { name:'IRIS', outlet:'GY' },
+  { name:'AVICIA', outlet:'GY' }, { name:'QUNNIE', outlet:'GY' }, { name:'MANDY', outlet:'GY' },
+  { name:'DR EVE', outlet:'GY' }, { name:'DR SHEVERN', outlet:'GY' }, { name:'YY', outlet:'RU' },
+  { name:'YEE JING', outlet:'RU' }, { name:'YAYA', outlet:'RU' }, { name:'VENUS', outlet:'RU' },
+  { name:'KE XIN', outlet:'RU' }, { name:'JANET', outlet:'RU' }, { name:'SAFENIE', outlet:'RU' },
+  { name:'YEE ANN', outlet:'RU' }, { name:'YI LING', outlet:'RU' }, { name:'DR LOO', outlet:'RU' },
+  { name:'DR ROZANNE', outlet:'RU' }, { name:'DR.KAI', outlet:'RU' }, { name:'SHARON', outlet:'JB' },
+  { name:'BEIER', outlet:'MA' }, { name:'XUE JING', outlet:'MA' }, { name:'JASYE', outlet:'MA' },
+  { name:'PEI SHIN', outlet:'MA' }, { name:'JIA LIN', outlet:'MA' }, { name:'DR JJ', outlet:'MA' },
+  { name:'DR KENNY', outlet:'MA' }, { name:'DR LILY', outlet:'MA' }, { name:'RAYNA', outlet:'MA' },
+  { name:'JESSY', outlet:'MA' }, { name:'BERYL', outlet:'MA' }, { name:'TING TING', outlet:'MA' },
+  { name:'XIANG YEE', outlet:'MA' }, { name:'XIIAO CHYN', outlet:'MA' }, { name:'SANNY', outlet:'SU' },
+  { name:'AI NI', outlet:'SU' }, { name:'JOEN', outlet:'SU' }, { name:'CORRINE', outlet:'SU' },
+  { name:'CHERRY', outlet:'SU' }, { name:'JESSICA', outlet:'SU' }, { name:'KATHERINE', outlet:'SU' },
+  { name:'QIAN BEI', outlet:'SU' }, { name:'WEI XUAN', outlet:'SU' }, { name:'DR MAX', outlet:'SU' },
+  { name:'DR ANN', outlet:'SU' }, { name:'HESTER', outlet:'KL' }, { name:'ANGEL', outlet:'CL' },
+  { name:'KETTY', outlet:'CL' }, { name:'ALICE', outlet:'CL' }, { name:'PINKY', outlet:'CL' },
+  { name:'KAI YU', outlet:'CL' }, { name:'CASSIE', outlet:'CL' }, { name:'KAI WEI', outlet:'CL' },
+  { name:'SHARON', outlet:'CL' }, { name:'KATRINA', outlet:'CL' }, { name:'XIN YI', outlet:'CL' },
+  { name:'ELLISE', outlet:'CL' }, { name:'ZI YING', outlet:'CL' }, { name:'TAN HUI', outlet:'CL' },
+  { name:'DR.RAINNIE', outlet:'CL' }, { name:'DR.NATALIE', outlet:'CL' }, { name:'DR SONIA', outlet:'CL' },
+  { name:'DR AGNES', outlet:'CL' }, { name:'BETTY', outlet:'PC' }, { name:'RACHEL', outlet:'PC' },
+  { name:'GINA', outlet:'PC' }, { name:'SHUE BIN', outlet:'PC' }, { name:'CHRIS', outlet:'PC' },
+  { name:'SU WEN', outlet:'PC' }, { name:'ZI XIN', outlet:'PC' }, { name:'WINNIE', outlet:'PC' },
+  { name:'AMANDA', outlet:'PC' }, { name:'JOEVIE', outlet:'PC' }, { name:'SANDY', outlet:'PC' },
+  { name:'DR.ZAELEY', outlet:'PC' }, { name:'DR JIN QIAN', outlet:'PC' }, { name:'ATHENA', outlet:'SS2' },
+  { name:'BERRY', outlet:'SS2' }, { name:'VERON', outlet:'SS2' }, { name:'JESSIE', outlet:'SS2' },
+  { name:'TINA', outlet:'SS2' }, { name:'EN NING', outlet:'SS2' }, { name:'CHING YUE', outlet:'SS2' },
+  { name:'WAN ROU', outlet:'SS2' }, { name:'WAN EN', outlet:'SS2' }, { name:'YONG XIN', outlet:'SS2' },
+  { name:'DR. CAITLYN', outlet:'SS2' }, { name:'DR.CZHIA HAO', outlet:'SS2' }, { name:'DR CASSANDRA', outlet:'SS2' },
+  { name:'DR EUNICE', outlet:'SS2' }, { name:'DR WEN YUN', outlet:'SS2' }, { name:'STEVE', outlet:'HQ' }
+];
+
+async function deleteRecentMessages() {
+  const hours = parseInt(document.getElementById('hours').value);
+  const cutoffTime = Date.now() - (hours * 60 * 60 * 1000);
+
+  const confirm = window.confirm(`🗑️ Delete messages from the last ${hours} hour(s) from ALL participants?\n\nThis will affect ~${PARTICIPANTS.length} participants.`);
+  if (!confirm) {
+    log('❌ Cancelled');
+    return;
+  }
+
+  log(`🗑️ Scanning all participants for messages older than ${new Date(cutoffTime).toLocaleString()}...\n`);
+
+  let deletedCount = 0;
+  let processedCount = 0;
+
+  for (let i = 0; i < PARTICIPANTS.length; i++) {
+    const pid = 'P' + String(i + 1).padStart(3, '0');
+
+    try {
+      const doc = await db.collection('participants').doc(pid).get();
+      if (!doc.exists || !doc.data().messages) continue;
+
+      const messages = doc.data().messages || [];
+      const toKeep = messages.filter(msg => {
+        const msgTime = msg.time?.toMillis?.() || msg.time?.seconds * 1000 || 0;
+        return msgTime < cutoffTime; // Keep old messages
+      });
+
+      if (toKeep.length < messages.length) {
+        const deleted = messages.length - toKeep.length;
+        deletedCount += deleted;
+
+        if (toKeep.length === 0) {
+          await db.collection('participants').doc(pid).update({
+            messages: firebase.firestore.FieldValue.delete()
+          });
+        } else {
+          await db.collection('participants').doc(pid).update({
+            messages: toKeep
+          });
+        }
+
+        log(`  ✅ ${pid}: deleted ${deleted} recent message(s)`);
+      }
+
+      processedCount++;
+    } catch (e) {
+      // Skip errors
+    }
+  }
+
+  log(`\n<span class="success">✅ Done! Processed ${processedCount} participants, deleted ${deletedCount} recent messages.</span>`);
+}
+
+function log(text) {
+  const out = document.getElementById('output');
+  out.innerHTML += text + '\n';
+}
+</script>
+
+</body>
+</html>
