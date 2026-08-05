@@ -231,12 +231,26 @@ const PARTICIPANTS = [
 ];
 
 function findParticipantId(name) {
-  const cleanName = name.trim().toUpperCase().replace(/^(CL|BM|GL|GY|RU|MA|SU|JB|PC|KL|SS2|PG|HQ|VIP)\s*-\s*/, '');
+  // Remove outlet prefix: "HQ - NAME" → "NAME"
+  let cleanName = name.trim();
+  cleanName = cleanName.replace(/^[A-Z]{1,3}\s*-\s*/, '').trim().toUpperCase();
+
+  // Also remove title prefixes like "DR.", "AM", "AAM"
+  cleanName = cleanName.replace(/^(DR\.?|AM|AAM|VIP)\s+/, '').trim();
+
+  console.log(`Searching for: "${name}" → cleaned: "${cleanName}"`);
+
   for (let i = 0; i < PARTICIPANTS.length; i++) {
-    if (PARTICIPANTS[i].name.toUpperCase() === cleanName || PARTICIPANTS[i].full.toUpperCase() === cleanName) {
+    const pName = PARTICIPANTS[i].name.toUpperCase();
+    const pFull = PARTICIPANTS[i].full.toUpperCase();
+
+    if (pName === cleanName || pFull === cleanName) {
+      console.log(`  ✅ Found: ${PARTICIPANTS[i].name} (P${String(i+1).padStart(3,'0')})`);
       return 'P' + String(i + 1).padStart(3, '0');
     }
   }
+
+  console.warn(`  ❌ Not found: ${name}`);
   return null;
 }
 
