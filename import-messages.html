@@ -260,7 +260,7 @@ async function importMessages() {
 
   const messages = [];
 
-  // Split by tabs: Seat | Master | Angel | Message
+  // Split by tabs: Seat | Recipient (Angel) | Sender (Master) | Message
   const lines = csv.split('\n');
 
   for (let line of lines) {
@@ -272,8 +272,8 @@ async function importMessages() {
     if (parts.length < 4) continue;
 
     const seat = parts[0].trim();
-    const from = parts[1].trim();
-    const to = parts[2].trim();
+    const to = parts[1].trim();      // Column B - recipient (Angel)
+    const from = parts[2].trim();    // Column C - sender (Master)
     const text = parts.slice(3).join('\t').trim();
 
     if (!from || !to || !text) {
