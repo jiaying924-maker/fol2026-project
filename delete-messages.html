@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete Messages from Firestore</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: monospace; background: #0a0e27; color: #f00; padding: 20px; }
+.container { max-width: 1000px; margin: 0 auto; }
+h1 { color: #f00; margin-bottom: 20px; }
+.warning { background: rgba(255,0,0,0.1); border: 2px solid #f00; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+input { background: #111; color: #f00; border: 1px solid #f00; padding: 8px; border-radius: 4px; width: 200px; }
+button { background: #f00; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-left: 10px; font-size: 14px; }
+button:hover { background: #cc0000; }
+#output { background: #111; color: #0f0; padding: 20px; border-radius: 4px; margin-top: 20px; white-space: pre-wrap; font-size: 12px; max-height: 400px; overflow-y: auto; }
+.success { color: #0f0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⚠️ DELETE MESSAGES FROM FIRESTORE</h1>
+
+  <div class="warning">
+    <strong>WARNING:</strong> This will DELETE all messages from a participant!<br>
+    Make sure you have the RIGHT participant ID before clicking delete.
+  </div>
+
+  <div>
+    <input type="text" id="pidInput" placeholder="Enter participant ID (e.g., P076)" value="P076">
+    <button onclick="deleteAllMessages()" style="background: #cc0000;">🗑️ DELETE ALL MESSAGES</button>
+  </div>
+
+  <div id="output"></div>
+</div>
+
+<script>
+const FB_CONFIG = {
+  apiKey:            "AIzaSyBXkCvP9XxS1n_DP_0dDKlk2eFfB6-hVHo",
+  authDomain:        "fol2026.firebaseapp.com",
+  projectId:         "fol2026",
+  storageBucket:     "fol2026.firebasestorage.app",
+  messagingSenderId: "766849872975",
+  appId:             "1:766849872975:web:25e03f8e1c3b2f1a3b7c9e"
+};
+
+firebase.initializeApp(FB_CONFIG);
+const db = firebase.firestore();
+
+async function deleteAllMessages() {
+  const pid = document.getElementById('pidInput').value.trim().toUpperCase();
+  if (!pid.startsWith('P')) {
+    log('❌ Invalid ID format. Use P### (e.g., P076)');
+    return;
+  }
+
+  const confirm = window.confirm(`⚠️ DELETE ALL messages from ${pid}? This cannot be undone!`);
+  if (!confirm) {
+    log('❌ Cancelled');
+    return;
+  }
+
+  log(`🗑️ Deleting messages from ${pid}...\n`);
+
+  try {
+    await db.collection('participants').doc(pid).update({
+      messages: firebase.firestore.FieldValue.delete()
+    });
+
+    log(`<span class="success">✅ All messages deleted from ${pid}!</span>`);
+
+  } catch (e) {
+    if (e.code === 'not-found') {
+      log(`❌ Document not found: ${pid}`);
+    } else {
+      log(`❌ Error: ${e.message}`);
+    }
+  }
+}
+
+function log(text) {
+  const out = document.getElementById('output');
+  out.innerHTML += text + '\n';
+}
+</script>
+
+</body>
+</html>
