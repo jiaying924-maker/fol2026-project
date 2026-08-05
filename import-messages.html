@@ -246,31 +246,28 @@ async function importMessages() {
 
   const messages = [];
 
-  // Split by tabs to get columns: Seat | Master | Angel | Message
-  const rows = csv.split(/\n(?=\d+\s+\w)/); // Split on lines that start with a number (seat)
+  // Split by tabs: Seat | Master | Angel | Message
+  const lines = csv.split('\n');
 
-  for (let row of rows) {
-    row = row.trim();
-    if (!row) continue;
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
 
-    const parts = row.split('\t').map(p => p.trim());
+    const parts = line.split('\t');
 
-    if (parts.length < 4) {
-      console.log('Skipping row - not enough columns:', parts);
+    if (parts.length < 4) continue;
+
+    const seat = parts[0].trim();
+    const from = parts[1].trim();
+    const to = parts[2].trim();
+    const text = parts.slice(3).join('\t').trim();
+
+    if (!from || !to || !text) {
+      console.log(`Skipping row ${seat} - missing data`);
       continue;
     }
 
-    const seat = parts[0];
-    const from = parts[1];
-    const to = parts[2];
-    const text = parts.slice(3).join(' ').trim();
-
-    if (!text || text.length < 2) {
-      console.log(`Skipping row ${seat} - no message`);
-      continue;
-    }
-
-    console.log(`Row ${seat}: ${from} → ${to} [${text.length} chars]`);
+    console.log(`✅ Found: ${from} → ${to}`);
     messages.push({ to, from, text });
   }
 
