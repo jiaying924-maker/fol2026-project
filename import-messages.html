@@ -291,9 +291,9 @@ async function importMessages() {
     } else {
       try {
         const msg = { from, text, time: firebase.firestore.Timestamp.now() };
-        await db.collection('participants').doc(pid).update({
+        await db.collection('participants').doc(pid).set({
           messages: firebase.firestore.FieldValue.arrayUnion(msg)
-        });
+        }, { merge: true });
         imported++;
         console.log(`✅ Imported for ${to} (${pid})`);
       } catch (e) {
