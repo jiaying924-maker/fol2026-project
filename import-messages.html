@@ -241,40 +241,36 @@ function findParticipantId(name) {
 }
 
 async function importMessages() {
-  const csv = document.getElementById('csvData').value.trim();
+  const csv = document.getElementById('csvData').value;
   if (!csv) { alert('Please paste CSV data'); return; }
 
-  const lines = csv.split('\n').filter(l => l.trim());
   const messages = [];
 
-  // Parse CSV - columns: A(seat), B(Master/from), C(Angel/to), D(Message)
-  for (const line of lines) {
-    // Split by comma, but handle quoted fields
-    const parts = [];
-    let current = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        parts.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
+  // Split by tabs to get columns: Seat | Master | Angel | Message
+  const rows = csv.split(/\n(?=\d+\s+\w)/); // Split on lines that start with a number (seat)
+
+  for (let row of rows) {
+    row = row.trim();
+    if (!row) continue;
+
+    const parts = row.split('\t').map(p => p.trim());
+
+    if (parts.length < 4) {
+      console.log('Skipping row - not enough columns:', parts);
+      continue;
     }
-    parts.push(current.trim());
 
-    if (parts.length < 4) continue;
+    const seat = parts[0];
+    const from = parts[1];
+    const to = parts[2];
+    const text = parts.slice(3).join(' ').trim();
 
-    // Column A: seat (skip), B: from, C: to, D+: message
-    const from = parts[1].trim(); // Master
-    const to = parts[2].trim();   // Angel
-    const text = parts.slice(3).join(',').trim(); // Message
+    if (!text || text.length < 2) {
+      console.log(`Skipping row ${seat} - no message`);
+      continue;
+    }
 
-    if (!text) continue;
-
+    console.log(`Row ${seat}: ${from} → ${to} [${text.length} chars]`);
     messages.push({ to, from, text });
   }
 
@@ -294,6 +290,7 @@ async function importMessages() {
     if (!pid) {
       notFound.push(to);
       failed++;
+      console.warn(`❌ Not found: ${to}`);
     } else {
       try {
         const msg = { from, text, time: firebase.firestore.Timestamp.now() };
@@ -301,6 +298,7 @@ async function importMessages() {
           messages: firebase.firestore.FieldValue.arrayUnion(msg)
         });
         imported++;
+        console.log(`✅ Imported for ${to} (${pid})`);
       } catch (e) {
         console.error(`Error importing message for ${to}:`, e);
         failed++;
@@ -314,8 +312,8 @@ async function importMessages() {
   }
 
   let result = `✅ Import complete! ${imported} messages imported, ${failed} failed`;
-  if (notFound.length > 0) {
-    result += `\n\nNot found: ${notFound.slice(0, 5).join(', ')}${notFound.length > 5 ? '...' : ''}`;
+  if (notFound.length > 0 && notFound.length <= 10) {
+    result += `\n\nNot found: ${notFound.join(', ')}`;
   }
   showStatus(result, 'success');
 }
