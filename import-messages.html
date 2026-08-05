@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOL 2026 · Import Messages</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #0a0e27; color: #fff; padding: 40px 20px; }
+.container { max-width: 1000px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 40px; border: 1px solid rgba(255,255,255,0.1); }
+h1 { margin-bottom: 30px; font-size: 28px; color: #D4A72C; }
+.input-group { margin-bottom: 20px; }
+label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-family: monospace; font-size: 12px; line-height: 1.5; }
+.btn { background: #D4A72C; color: #000; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; margin-top: 10px; }
+.btn:hover { background: #F0D980; }
+.status { margin-top: 20px; padding: 16px; border-radius: 8px; }
+.status.info { background: rgba(33,150,243,0.2); border: 1px solid rgba(33,150,243,0.5); color: #64B5F6; }
+.status.success { background: rgba(76,175,80,0.2); border: 1px solid rgba(76,175,80,0.5); color: #81C784; }
+.status.error { background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.5); color: #EF5350; }
+.progress { margin-top: 20px; }
+.progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: #D4A72C; width: 0%; transition: width 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎫 FOL 2026 · Batch Import Messages</h1>
+
+  <div class="input-group">
+    <label>Paste CSV data (paste from Excel after the header row):</label>
+    <textarea id="csvData" placeholder="Paste CSV rows here..." rows="15"></textarea>
+  </div>
+
+  <button class="btn" onclick="importMessages()">🚀 Import Messages</button>
+
+  <div id="status"></div>
+  <div id="progress" class="progress" style="display:none;">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;text-align:center;">
+      <span id="progressText">0 / 0</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+const FB_CONFIG = {
+  apiKey:            "AIzaSyBXkCvP9XxS1n_DP_0dDKlk2eFfB6-hVHo",
+  authDomain:        "fol2026.firebaseapp.com",
+  projectId:         "fol2026",
+  storageBucket:     "fol2026.firebasestorage.app",
+  messagingSenderId: "766849872975",
+  appId:             "1:766849872975:web:25e03f8e1c3b2f1a3b7c9e"
+};
+
+firebase.initializeApp(FB_CONFIG);
+const db = firebase.firestore();
+
+const PARTICIPANTS = [
+  { name:'DR. FONG', full:'FONG TOH JENG', role:'CEO', outlet:'HQ' },
+  { name:'DR. JAYE', full:'TAN SOO HUA', role:'COO', outlet:'HQ' },
+  { name:'DR. JOVYN', full:'NG CHIA WEN', role:'CPO', outlet:'HQ' },
+  { name:'DR NICOLE', full:'NICOLE NG I', role:'VPO', outlet:'HQ' },
+  { name:'DR XUAN', full:'LIM WEN XUAN', role:'LOO', outlet:'HQ' },
+  { name:'DR JEM', full:'LIM JIA YING', role:'LPO', outlet:'HQ' },
+  { name:'JOANNE', full:'LEE KAI YEE', role:'ASS MKT MANAGER', outlet:'HQ' },
+  { name:'GING HUI', full:'ANG GING HUI', role:'ASS MARCOM MANAGER', outlet:'HQ' },
+  { name:'XIN NI', full:'KHOR XIN NI', role:'CSC SUPERVISOR', outlet:'HQ' },
+  { name:'IRENE', full:'IRENE WONG AI LING', role:'CSC SUPERVISOR', outlet:'HQ' },
+  { name:'YU TING', full:'KEE YU TING', role:'CSC SUPERVISOR', outlet:'HQ' },
+  { name:'ZHI TIAN', full:'GAN ZHI TIAN', role:'CSC', outlet:'HQ' },
+  { name:'GRACEYY', full:'TAN SUET YEE', role:'CSC', outlet:'HQ' },
+  { name:'YI LING', full:'YEOH YI LING', role:'CSC', outlet:'HQ' },
+  { name:'EVELYN', full:'LIM YEE MUN', role:'CSC', outlet:'HQ' },
+  { name:'SU JIN', full:'LIM SU JIN', role:'CSC', outlet:'HQ' },
+  { name:'YU CHUEN', full:'CHUAH YU CHUEN', role:'CP', outlet:'HQ' },
+  { name:'JIA XUAN', full:'LIM JIA XUAN', role:'CP', outlet:'HQ' },
+  { name:'CHING THING', full:'KOAY CHING THING', role:'HR', outlet:'HQ' },
+  { name:'KHAI XUAN', full:'TAN KHAI XUAN', role:'HR', outlet:'HQ' },
+  { name:'CELINE', full:'CELINE TEH SHYEH YIN', role:'HR', outlet:'HQ' },
+  { name:'CAROL', full:'TAN EE ING', role:'PPC', outlet:'HQ' },
+  { name:'LIANG', full:'HONG CHOO LIANG', role:'PPC', outlet:'HQ' },
+  { name:'XIN RU', full:'YEOH XIN RU', role:'PPC', outlet:'HQ' },
+  { name:'CATHERINE', full:'LAO HONG HONG', role:'QA', outlet:'HQ' },
+  { name:'JINNY', full:'LIM JING YI', role:'QA', outlet:'HQ' },
+  { name:'SHUE HUI', full:'KOAY SHUE HUI', role:'QA', outlet:'HQ' },
+  { name:'TK', full:'NG TIEN KHOON', role:'SOA', outlet:'HQ' },
+  { name:'ADELINE', full:'LEE KHE HUONG', role:'RC', outlet:'HQ' },
+  { name:'HOOI HUNG', full:'VOON HOOI HUNG', role:'DM', outlet:'HQ' },
+  { name:'叶老师', full:'YEAP WENG HOE', role:'ADVISOR', outlet:'HQ' },
+  { name:'DR.JOYCE', full:'JOYCE ONG ZIZHI', role:'Doctor', outlet:'SU' },
+  { name:'NICOLE', full:'YEE WEI TING', role:'AM', outlet:'PG' },
+  { name:'PHEI CHIA', full:'CHEE TOO PHEI CHIA', role:'AAM', outlet:'PG' },
+  { name:'WENNIE', full:'NEOW WENNIE', role:'Branch Manager', outlet:'BM' },
+  { name:'ESTHER', full:'LOW KER YEE', role:'Supervisor', outlet:'BM' },
+  { name:'HONEY', full:'HONEY CHONG THEAN MI', role:'Consultant', outlet:'BM' },
+  { name:'SHERLYN', full:'TAN YING SING', role:'Consultant', outlet:'BM' },
+  { name:'WAN YING', full:'NGO WAN YING', role:'Consultant', outlet:'BM' },
+  { name:'ENNA', full:'LAW YI ERN', role:'Consultant', outlet:'BM' },
+  { name:'TIFFANY', full:'NG SHI HUI', role:'Therapist', outlet:'BM' },
+  { name:'YEN SI', full:'TAN YEN SI', role:'Therapist', outlet:'BM' },
+  { name:'AI MEI', full:'CHAN AI MEI', role:'Therapist', outlet:'BM' },
+  { name:'YE YING', full:'TAN YE YING', role:'Therapist', outlet:'BM' },
+  { name:'YVONNE', full:'ANG YVONNE', role:'Therapist', outlet:'BM' },
+  { name:'ELAINE', full:'TAN JIA SHYUAN', role:'CSR SUPERVISOR', outlet:'BM' },
+  { name:'JANICE', full:'KHOR YI TING', role:'CSR', outlet:'BM' },
+  { name:'DR HONG', full:'HONG JIA CHUN', role:'Doctor', outlet:'BM' },
+  { name:'DR LEENA', full:'LIM LEE NAA', role:'Doctor', outlet:'BM' },
+  { name:'DR JOLING', full:'CHEW PHOAY KOON', role:'Doctor', outlet:'BM' },
+  { name:'DR EE LING', full:'TAN EE LING', role:'Doctor', outlet:'BM' },
+  { name:'MINDY', full:'CHEW SEE MENG', role:'Branch Manager', outlet:'GL' },
+  { name:'SYVIN', full:'FOO LI SHAN', role:'Supervisor', outlet:'GL' },
+  { name:'HUI XIAN', full:'KHOO HUI XIAN', role:'Consultant', outlet:'GL' },
+  { name:'JANICE', full:'KHOO WEI SIN', role:'Consultant', outlet:'GL' },
+  { name:'STELLA', full:'TAN CHI YAN', role:'Consultant', outlet:'GL' },
+  { name:'KATHERINE', full:'CHAI XIN JIE', role:'Consultant', outlet:'GL' },
+  { name:'YUNNY', full:'ANG YUN QI', role:'Therapist', outlet:'GL' },
+  { name:'KARENE', full:'HON YI TING', role:'Therapist', outlet:'GL' },
+  { name:'REGINA', full:"REGINA CH'NG PEI XUAN", role:'Therapist', outlet:'GL' },
+  { name:'XIAO WEI', full:"CH'NG XIAO WEI", role:'Therapist', outlet:'GL' },
+  { name:'YEN HOON', full:'OON YEN HOON', role:'Therapist', outlet:'GL' },
+  { name:'CHLOE', full:'LEE WAN YU', role:'Therapist', outlet:'GL' },
+  { name:'TIFFANY', full:'CHENG ZHI EN', role:'Therapist', outlet:'GL' },
+  { name:'ESTHER', full:'ESTHER TAN JIA YING', role:'CSR', outlet:'GL' },
+  { name:'DR CHERYL', full:'CHEAH PHEI CHUIN', role:'Doctor', outlet:'GL' },
+  { name:'DR MICHELLE', full:'LEE JIA YUN', role:'Doctor', outlet:'GL' },
+  { name:'DR TEH', full:'TEH WENG TERR', role:'Doctor Leader', outlet:'GL' },
+  { name:'DR CHAN', full:'CHAN HUI YING', role:'Doctor', outlet:'SU' },
+  { name:'DR YI WEN', full:'TAN YI WEN', role:'Doctor', outlet:'GL' },
+  { name:'CLARISE', full:'CHUAH JING PING', role:'Supervisor', outlet:'GY' },
+  { name:'MARGARET', full:'MARGARET CHIN SIEW THENG', role:'Consultant', outlet:'GY' },
+  { name:'IRIS', full:'IRIS LUAH JIE YING', role:'Therapist', outlet:'GY' },
+  { name:'AVICIA', full:'CHENG ZHI YI', role:'Therapist', outlet:'GY' },
+  { name:'QUNNIE', full:'GOH YU QIAN', role:'Therapist', outlet:'GY' },
+  { name:'MANDY', full:'MANDY NG ZHI CHING', role:'CSR', outlet:'GY' },
+  { name:'DR EVE', full:'YUEN SHAN LING', role:'Doctor', outlet:'GY' },
+  { name:'DR SHEVERN', full:'SHEVERN YEOH YU RUUN', role:'Doctor', outlet:'GY' },
+  { name:'YY', full:'LIM YEE YIN', role:'Supervisor', outlet:'RU' },
+  { name:'YEE JING', full:'CHAI YEE JING', role:'Consultant', outlet:'RU' },
+  { name:'YAYA', full:'CHIEW ZIN HUA', role:'Branch Manager', outlet:'RU' },
+  { name:'VENUS', full:'TEE YEE SYUEN', role:'Consultant', outlet:'RU' },
+  { name:'KE XIN', full:'TAN KE XIN', role:'Therapist', outlet:'RU' },
+  { name:'JANET', full:'JANET YUN JING HUI', role:'Therapist', outlet:'RU' },
+  { name:'SAFENIE', full:'UN MIN QIN', role:'Therapist', outlet:'RU' },
+  { name:'YEE ANN', full:'CHUA YEE ANN', role:'Therapist', outlet:'RU' },
+  { name:'YI LING', full:'TAN YI LING', role:'CSR', outlet:'RU' },
+  { name:'DR LOO', full:'LOO SHI JIN', role:'Doctor', outlet:'RU' },
+  { name:'DR ROZANNE', full:'CHANG HUI XIAN', role:'Doctor', outlet:'RU' },
+  { name:'DR.KAI', full:'HONG KHYE HUNG', role:'Doctor', outlet:'RU' },
+  { name:'SHARON', full:'NG SAN FOO', role:'AM', outlet:'JB' },
+  { name:'BEIER', full:'KHOR BEI SI', role:'CSR', outlet:'MA' },
+  { name:'XUE JING', full:'TAN SIOK CHING', role:'Consultant', outlet:'MA' },
+  { name:'JASYE', full:'LEE JIA YI', role:'Consultant', outlet:'MA' },
+  { name:'PEI SHIN', full:'LEW PEI SHIN', role:'Consultant', outlet:'MA' },
+  { name:'JIA LIN', full:'LEY JIA LIN', role:'Branch Manager', outlet:'MA' },
+  { name:'DR JJ', full:'LEE JIA JING', role:'Doctor', outlet:'MA' },
+  { name:'DR KENNY', full:'ANG YEE QUAN', role:'Ass. Doctor Leader (Southern)', outlet:'MA' },
+  { name:'DR LILY', full:'TAI LILY', role:'Doctor', outlet:'MA' },
+  { name:'RAYNA', full:'CHEONG YI XIAN', role:'Therapist', outlet:'MA' },
+  { name:'JESSY', full:'JESSY TEE', role:'Therapist', outlet:'MA' },
+  { name:'BERYL', full:'BERYL SOON YI', role:'Therapist', outlet:'MA' },
+  { name:'TING TING', full:'OOI THING YIK', role:'Therapist', outlet:'MA' },
+  { name:'XIANG YEE', full:'LEE XIANG YEE', role:'Therapist', outlet:'MA' },
+  { name:'XIIAO CHYN', full:'QUAH YI CHYN', role:'Therapist', outlet:'MA' },
+  { name:'SANNY', full:'WONG SEE FANG', role:'Supervisor', outlet:'SU' },
+  { name:'AI NI', full:'LOW AI NI', role:'Branch Manager', outlet:'SU' },
+  { name:'JOEN', full:'LAW SOOK WEE', role:'Consultant', outlet:'SU' },
+  { name:'CORRINE', full:'KHOO HUI FUNG', role:'Consultant', outlet:'SU' },
+  { name:'CHERRY', full:'VONG XUE LIAN', role:'CSR', outlet:'SU' },
+  { name:'JESSICA', full:'LIONG ZI SHAN', role:'Therapist', outlet:'SU' },
+  { name:'KATHERINE', full:'LAW RUI XUAN', role:'Therapist', outlet:'SU' },
+  { name:'QIAN BEI', full:'LAU QIAN BEI', role:'Therapist', outlet:'SU' },
+  { name:'WEI XUAN', full:'WONG WEI XUAN', role:'Therapist', outlet:'SU' },
+  { name:'DR MAX', full:'KHOR YI ZHEN', role:'Doctor', outlet:'SU' },
+  { name:'DR ANN', full:'ANN CHEW LIYEN', role:'Doctor', outlet:'SU' },
+  { name:'HESTER', full:'WONG PIT KHI', role:'AM', outlet:'KL' },
+  { name:'ANGEL', full:'ANGEL NG ANN QI', role:'Consultant', outlet:'CL' },
+  { name:'KETTY', full:'HUANG XIAOFEN', role:'Branch Manager', outlet:'CL' },
+  { name:'ALICE', full:'ALICE LEE', role:'Supervisor', outlet:'CL' },
+  { name:'PINKY', full:'CHONG LEE FONG', role:'Consultant', outlet:'CL' },
+  { name:'KAI YU', full:'CHIA KAY YEE', role:'Consultant', outlet:'CL' },
+  { name:'CASSIE', full:'CASSIE HO YEN TONG', role:'Therapist', outlet:'CL' },
+  { name:'KAI WEI', full:'NG KAI WEI', role:'Therapist', outlet:'CL' },
+  { name:'SHARON', full:'FOOK ZHI XUAN', role:'Therapist', outlet:'CL' },
+  { name:'KATRINA', full:'KATRINA SOON YONG QING', role:'Therapist', outlet:'CL' },
+  { name:'XIN YI', full:'OH XIN YI', role:'Therapist', outlet:'CL' },
+  { name:'ELLISE', full:'LEE AI LIS', role:'Therapist', outlet:'CL' },
+  { name:'ZI YING', full:'THENG ZI YING', role:'URAC', outlet:'CL' },
+  { name:'TAN HUI', full:'TAN HUI', role:'CSR', outlet:'CL' },
+  { name:'DR.RAINNIE', full:'WONG HUI HUNG', role:'Doctor', outlet:'CL' },
+  { name:'DR.NATALIE', full:'NATALIE KWONG ZHU WEN', role:'Doctor', outlet:'CL' },
+  { name:'DR SONIA', full:'TEE PUI SIN', role:'Doctor', outlet:'CL' },
+  { name:'DR AGNES', full:'AGNES LU', role:'Doctor', outlet:'CL' },
+  { name:'BETTY', full:'BETTY SIA SIEW CHEE', role:'Supervisor', outlet:'PC' },
+  { name:'RACHEL', full:'KOK CHOY PEI', role:'Branch Manager', outlet:'PC' },
+  { name:'GINA', full:'WONG SIEW CHIN', role:'Consultant', outlet:'PC' },
+  { name:'SHUE BIN', full:'TAN SHUE BIN', role:'Consultant', outlet:'PC' },
+  { name:'CHRIS', full:'CHIA SHEE YEN', role:'Therapist', outlet:'PC' },
+  { name:'SU WEN', full:'CHAI SU WEN', role:'Therapist', outlet:'PC' },
+  { name:'ZI XIN', full:'CHEONG ZEE YAN', role:'Therapist', outlet:'PC' },
+  { name:'WINNIE', full:'WINNIE TING QIAN QIAN', role:'Therapist', outlet:'PC' },
+  { name:'AMANDA', full:'AMANDA YII SIEW HIE', role:'Therapist', outlet:'PC' },
+  { name:'JOEVIE', full:'TAM SHING LIN', role:'Therapist', outlet:'PC' },
+  { name:'SANDY', full:'NG KA HUI', role:'CSR', outlet:'PC' },
+  { name:'DR.ZAELEY', full:'CHAN SHIN YEE', role:'Doctor', outlet:'PC' },
+  { name:'DR JIN QIAN', full:'LOO JIN QIAN', role:'Doctor', outlet:'PC' },
+  { name:'ATHENA', full:'TEO HUI YOKE', role:'Consultant', outlet:'SS2' },
+  { name:'BERRY', full:'KHOO CHIAO MEI', role:'Branch Manager', outlet:'SS2' },
+  { name:'VERON', full:'CHOO YIN WEI', role:'Consultant', outlet:'SS2' },
+  { name:'JESSIE', full:'LAU JIA CHYI', role:'Therapist', outlet:'SS2' },
+  { name:'TINA', full:'ESTINA LAI BINTI ABDULLAH', role:'Therapist', outlet:'SS2' },
+  { name:'EN NING', full:'YEONG EN NING', role:'Therapist', outlet:'SS2' },
+  { name:'CHING YUE', full:'LIM CHING YUE', role:'Therapist', outlet:'SS2' },
+  { name:'WAN ROU', full:'SIK WAN ROU', role:'Therapist', outlet:'SS2' },
+  { name:'WAN EN', full:'YAN WAN EN', role:'Therapist', outlet:'SS2' },
+  { name:'YONG XIN', full:'LEE YONG XIN', role:'CSR', outlet:'SS2' },
+  { name:'DR. CAITLYN', full:'LAU CHIN LING', role:'Doctor', outlet:'SS2' },
+  { name:'DR.CZHIA HAO', full:'TAN CZHIA HAO', role:'Doctor', outlet:'SS2' },
+  { name:'DR CASSANDRA', full:'CHAN QING YAN', role:'Doctor', outlet:'SS2' },
+  { name:'DR EUNICE', full:'CHAN EUNICE', role:'Doctor', outlet:'SS2' },
+  { name:'DR WEN YUN', full:'LOO WEN YUN', role:'Doctor', outlet:'SS2' },
+  { name:'STEVE', full:'NEOH SZE TSIN', role:'CFO', outlet:'HQ' }
+];
+
+function findParticipantId(name) {
+  const cleanName = name.trim().toUpperCase().replace(/^(CL|BM|GL|GY|RU|MA|SU|JB|PC|KL|SS2|PG|HQ|VIP)\s*-\s*/, '');
+  for (let i = 0; i < PARTICIPANTS.length; i++) {
+    if (PARTICIPANTS[i].name.toUpperCase() === cleanName || PARTICIPANTS[i].full.toUpperCase() === cleanName) {
+      return 'P' + String(i + 1).padStart(3, '0');
+    }
+  }
+  return null;
+}
+
+async function importMessages() {
+  const csv = document.getElementById('csvData').value.trim();
+  if (!csv) { alert('Please paste CSV data'); return; }
+
+  const lines = csv.split('\n').filter(l => l.trim());
+  const messages = [];
+
+  // Parse CSV
+  for (const line of lines) {
+    const parts = line.split('\t').map(p => p.trim()).filter(p => p);
+    if (parts.length < 3) continue;
+
+    const from = parts[parts.length - 2]; // Master
+    const to = parts[parts.length - 3];   // Angel
+    const text = parts.slice(3).join(' '); // Message (everything after first 3 columns)
+
+    if (!text) continue;
+
+    messages.push({ to, from, text });
+  }
+
+  if (messages.length === 0) { alert('No messages found'); return; }
+
+  showStatus(`Found ${messages.length} messages. Starting import...`, 'info');
+  document.getElementById('progress').style.display = 'block';
+
+  let imported = 0;
+  let failed = 0;
+
+  for (let i = 0; i < messages.length; i++) {
+    const { to, from, text } = messages[i];
+    const pid = findParticipantId(to);
+
+    if (!pid) {
+      console.warn(`❌ Could not find participant: ${to}`);
+      failed++;
+    } else {
+      try {
+        const msg = { from, text, time: firebase.firestore.Timestamp.now() };
+        await db.collection('participants').doc(pid).update({
+          messages: firebase.firestore.FieldValue.arrayUnion(msg)
+        });
+        imported++;
+      } catch (e) {
+        console.error(`Error importing message for ${to}:`, e);
+        failed++;
+      }
+    }
+
+    // Update progress
+    const percent = Math.round((i + 1) / messages.length * 100);
+    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('progressText').textContent = `${i + 1} / ${messages.length}`;
+  }
+
+  showStatus(`✅ Import complete! ${imported} messages imported, ${failed} failed`, 'success');
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+</script>
+
+</body>
+</html>
