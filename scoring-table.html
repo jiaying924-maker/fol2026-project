@@ -259,9 +259,24 @@ async function loadScores() {
 
     try {
       const doc = await db.collection('participants').doc(pid).get();
-      const data = doc.data() || {};
-      const score = Array.isArray(data.marks) ? data.marks.length : 0;
-      allData.push({ rank: i + 1, id: pid, name: p.name, full: p.full, role: p.role, outlet: p.outlet, score });
+      const data = doc.data();
+
+      if (!data) {
+        allData.push({ rank: i + 1, id: pid, name: p.name, full: p.full, role: p.role, outlet: p.outlet, score: 0 });
+      } else {
+        const marks = data.marks;
+        let score = 0;
+
+        if (Array.isArray(marks)) {
+          score = marks.length;
+        } else if (marks && typeof marks === 'object') {
+          // If marks is an object (shouldn't be, but just in case)
+          score = Object.keys(marks).length;
+        }
+
+        allData.push({ rank: i + 1, id: pid, name: p.name, full: p.full, role: p.role, outlet: p.outlet, score });
+      }
+
       loaded++;
 
       // Update progress every 10 participants
