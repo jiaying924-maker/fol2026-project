@@ -246,9 +246,12 @@ let currentSort = 'rank';
 
 async function loadScores() {
   const out = document.getElementById('tableContainer');
-  out.innerHTML = '<div class="loading">Loading scores from all participants...</div>';
+  out.innerHTML = '<div class="loading">Loading scores from all participants...<br><small>This may take 1-2 minutes for all 163 participants</small></div>';
 
   allData = [];
+  let loaded = 0;
+
+  console.log('Starting to load scores from Firestore...');
 
   for (let i = 0; i < PARTICIPANTS.length; i++) {
     const p = PARTICIPANTS[i];
@@ -259,11 +262,19 @@ async function loadScores() {
       const data = doc.data() || {};
       const score = Array.isArray(data.marks) ? data.marks.length : 0;
       allData.push({ rank: i + 1, id: pid, name: p.name, full: p.full, role: p.role, outlet: p.outlet, score });
+      loaded++;
+
+      // Update progress every 10 participants
+      if (loaded % 10 === 0) {
+        out.innerHTML = `<div class="loading">Loading... ${loaded}/163 participants loaded</div>`;
+      }
     } catch (e) {
+      console.error(`Error loading ${pid}:`, e);
       allData.push({ rank: i + 1, id: pid, name: p.name, full: p.full, role: p.role, outlet: p.outlet, score: 0 });
     }
   }
 
+  console.log(`Finished loading ${loaded} scores`);
   renderTable();
 }
 
